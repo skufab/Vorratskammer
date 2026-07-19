@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vorratskammer">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#5F8A3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADFElEQVR4nO3dsXETURRAUZkhI3ZCE3RAAYQkDumBMgjow4lD90ETThyTE2hGsyPrggGD/tOcE2kc/f/n6u0Gq/XVpy/vd3DKq3MvgHWJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQO0utzL+AFPN4+nHsJp13fvD33Ev6KyUESB0kcpEu459j6+u7NeRfw+dv38y7gBZkcJHGQxEESB0kcJHGQxEESB0kcJHGQxEESB0kcJHGQxEGa+jzHss+Nbm0XOfF50mFxjGjipMPKB1Uy6bIyt4ytQbuYMTkGHehz7Lez/ggZEMfJMu7u7w6fP374+B+X8xt+vsjH24fF+1g9jqdlbE98kP2yjxJZvI9J9xy7sWUczFr/0pPjaGw852TX/2XA3f3ddn6sPDzWnRx/UMYUR3tZ9nZ73Ti2LqmMvRE7mhEHZ3G15r/x2k7aEV+yP7O9+VjwzsPkIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7S0u/neKYRr32ayOQgiYN0CZeV6dN7WSYHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIH6RKePvejpn/E5CCJg3QJl5Xp03tZJgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBWjSO65u3h8/LvvLrL233td3vOhaNgxXMiOPyhseIHa0bx9GkHXGaz3S0lzWvKbuV49hdaB9TytgtHsdT0/uYtf6rT1/en3sNv/B4+/D0j+NeL3kyi5XHxm5EHLvoY7rFy9hNeUnt/hwvJpH1s9ibdM8x5Ux/btAuZkyOg8PJjpsig5o4GBbHwcSzHmfSZYX/TBwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQfoB08GD3ZcM1PIAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADFElEQVR4nO3dsXETURRAUZkhI3ZCE3RAAYQkDumBMgjow4lD90ETThyTE2hGsyPrggGD/tOcE2kc/f/n6u0Gq/XVpy/vd3DKq3MvgHWJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQO0utzL+AFPN4+nHsJp13fvD33Ev6KyUESB0kcpEu459j6+u7NeRfw+dv38y7gBZkcJHGQxEESB0kcJHGQxEESB0kcJHGQxEESB0kcJHGQxEGa+jzHss+Nbm0XOfF50mFxjGjipMPKB1Uy6bIyt4ytQbuYMTkGHehz7Lez/ggZEMfJMu7u7w6fP374+B+X8xt+vsjH24fF+1g9jqdlbE98kP2yjxJZvI9J9xy7sWUczFr/0pPjaGw852TX/2XA3f3ddn6sPDzWnRx/UMYUR3tZ9nZ73Ti2LqmMvRE7mhEHZ3G15r/x2k7aEV+yP7O9+VjwzsPkIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7S0u/neKYRr32ayOQgiYN0CZeV6dN7WSYHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIH6RKePvejpn/E5CCJg3QJl5Xp03tZJgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBWjSO65u3h8/LvvLrL233td3vOhaNgxXMiOPyhseIHa0bx9GkHXGaz3S0lzWvKbuV49hdaB9TytgtHsdT0/uYtf6rT1/en3sNv/B4+/D0j+NeL3kyi5XHxm5EHLvoY7rFy9hNeUnt/hwvJpH1s9ibdM8x5Ux/btAuZkyOg8PJjpsig5o4GBbHwcSzHmfSZYX/TBwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQfoB08GD3ZcM1PIAAAAASUVORK5CYII=">
+<title>Vorratskammer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F8E9D2;
+    --card:#FFF9F0;
+    --ink:#4A3324;
+    --ink-soft:#8C7362;
+    --line:#EAD5B0;
+
+    --recipes:#D8622F;
+    --recipes-soft:#F6D9BC;
+    --week:#5F8A3E;
+    --week-soft:#DCEAC9;
+    --shop:#C1477A;
+    --shop-soft:#F5D6E4;
+    --clean:#DDA324;
+    --clean-soft:#F7E7B8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:640px;margin:0 auto;padding:20px 16px 60px;}
+  header{padding:8px 4px 20px;}
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.95rem;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+    color:var(--recipes);
+  }
+  header p{margin:0;color:var(--ink-soft);font-size:0.92rem;font-style:italic;}
+  header .divider{
+    margin:10px 0 2px;
+    letter-spacing:0.4em;
+    font-size:0.7rem;
+    color:var(--week);
+  }
+
+  .tabs{display:flex;gap:6px;margin-bottom:0;position:relative;z-index:1;}
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:11px 4px 13px;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:0.86rem;
+    border:none;
+    cursor:pointer;
+    border-radius:10px 10px 0 0;
+    background:var(--line);
+    color:var(--ink-soft);
+    transform:translateY(6px);
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab.active{transform:translateY(0);color:#fff;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
+  .tab[data-tab="recipes"].active{background:var(--recipes);}
+  .tab[data-tab="week"].active{background:var(--week);}
+  .tab[data-tab="shop"].active{background:var(--shop);}
+  .tab[data-tab="clean"].active{background:var(--clean);}
+
+  .card{
+    background:var(--card);
+    border-radius:4px 18px 18px 18px;
+    border:1px solid var(--line);
+    padding:18px;
+    min-height:300px;
+    box-shadow:0 6px 20px rgba(74,51,36,.10);
+  }
+  .section-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.15rem;
+    margin:0 0 12px;
+  }
+  .muted{color:var(--ink-soft);font-size:0.88rem;}
+
+  button.action{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    border:none;
+    border-radius:20px;
+    padding:8px 16px;
+    cursor:pointer;
+    background:var(--ink);
+    color:#fff;
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+  }
+  button.small{padding:5px 10px;font-size:0.78rem;}
+  input,textarea,select{
+    font-family:'Inter',sans-serif;
+    font-size:0.9rem;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#FFFDF8;
+    width:100%;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  label{font-size:0.78rem;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:4px;}
+  .field{margin-bottom:10px;}
+  .row{display:flex;gap:8px;}
+  .row > *{flex:1;}
+
+  .recipe-item{
+    border-bottom:1px solid var(--line);
+    padding:12px 0;
+  }
+  .recipe-item:last-child{border-bottom:none;}
+  .recipe-head{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;gap:8px;}
+  .recipe-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.02rem;margin:0;}
+  .tag{
+    display:inline-block;
+    font-size:0.72rem;
+    font-weight:600;
+    color:var(--recipes);
+    background:var(--recipes-soft);
+    padding:2px 8px;
+    border-radius:20px;
+    margin-top:3px;
+  }
+  .recipe-body{margin-top:10px;font-size:0.88rem;line-height:1.5;display:none;}
+  .recipe-body.open{display:block;}
+  .recipe-body pre{white-space:pre-wrap;font-family:inherit;margin:4px 0 10px;}
+  .recipe-body h4{font-size:0.8rem;margin:0 0 2px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
+
+  .day-block{border-bottom:1px solid var(--line);padding:10px 0;}
+  .day-block:last-child{border-bottom:none;}
+  .day-block h4{font-family:'Fraunces',serif;font-size:0.95rem;margin:0 0 6px;color:var(--week);}
+
+  .shop-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .shop-item:last-child{border-bottom:none;}
+  .shop-item.checked span{text-decoration:line-through;color:var(--ink-soft);}
+  .shop-item input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--shop);}
+  .shop-item span{flex:1;font-size:0.92rem;}
+
+  .clean-item{padding:10px 0;border-bottom:1px solid var(--line);}
+  .clean-item:last-child{border-bottom:none;}
+  .clean-item.overdue{
+    background:#FBEAE4;
+    border-left:4px solid #B0503A;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:6px;
+  }
+  .clean-item.overdue .clean-top strong{color:#9C3E2C;}
+  .clean-item.overdue .clean-meta{color:#A56152;}
+  .clean-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .clean-top strong{font-size:0.94rem;}
+  .clean-meta{font-size:0.78rem;color:var(--ink-soft);margin-top:2px;}
+  .assignee-pill{
+    font-size:0.76rem;font-weight:600;color:var(--clean);
+    background:var(--clean-soft);padding:2px 9px;border-radius:20px;white-space:nowrap;
+  }
+  .freshness{display:inline-flex;align-items:center;gap:5px;font-size:0.74rem;font-weight:600;padding:2px 9px;border-radius:20px;margin-top:5px;}
+  .freshness .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .freshness.ok{background:var(--week-soft);color:#4F5C36;}
+  .freshness.ok .dot{background:var(--week);}
+  .freshness.warning{background:var(--clean-soft);color:#8A611F;}
+  .freshness.warning .dot{background:var(--clean);}
+  .freshness.overdue{background:#F3DAD0;color:#9C4A2E;}
+  .freshness.overdue .dot{background:#B0503A;}
+  .freshness.neutral{background:var(--line);color:var(--ink-soft);}
+  .freshness.neutral .dot{background:var(--ink-soft);}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;}
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(32,41,31,.45);
+    display:flex;align-items:flex-end;justify-content:center;z-index:10;
+  }
+  .modal{
+    background:var(--card);width:100%;max-width:640px;
+    border-radius:22px 22px 0 0;padding:20px 18px 26px;
+    max-height:88vh;overflow-y:auto;
+  }
+  .modal h3{font-family:'Fraunces',serif;margin:0 0 14px;color:var(--recipes);}
+  .modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+  .empty{text-align:center;padding:36px 10px;color:var(--ink-soft);font-size:0.9rem;}
+  .loading{text-align:center;padding:36px 10px;color:var(--ink-soft);font-size:0.85rem;}
+  .member-chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--clean-soft);
+    color:var(--clean);border-radius:20px;padding:4px 6px 4px 12px;font-size:0.82rem;font-weight:600;margin:0 6px 6px 0;
+  }
+  .member-chip button{border:none;background:none;color:var(--clean);cursor:pointer;font-size:0.95rem;line-height:1;padding:2px;}
+  .mood-box{
+    background:var(--clean-soft);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:16px;
+  }
+  .mood-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .mood-top .face{font-size:1.6rem;}
+  .mood-label{font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;color:var(--ink);}
+  .mood-track{background:rgba(255,255,255,.6);border-radius:20px;height:10px;overflow:hidden;}
+  .mood-fill{height:100%;border-radius:20px;transition:width .5s ease;}
+  .mood-top .face{transition:transform .2s ease;cursor:pointer;background:none;border:none;padding:0;}
+  .mood-top .face:active{transform:scale(1.3);}
+  .need-row{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .need-row .need-icon{font-size:1.1rem;flex:none;width:22px;text-align:center;}
+  .need-row .need-label{font-size:0.8rem;color:var(--ink);flex:none;width:64px;}
+  .need-row .need-track{flex:1;background:rgba(0,0,0,.06);border-radius:20px;height:7px;overflow:hidden;}
+  .need-row .need-fill{height:100%;border-radius:20px;transition:width .5s ease;}
+  .board-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .board-row:last-child{border-bottom:none;}
+  .board-medal{width:22px;text-align:center;font-size:1rem;flex:none;}
+  .board-name{flex:1;font-weight:600;font-size:0.9rem;}
+  .board-title{font-size:0.74rem;color:var(--ink-soft);}
+  .board-points{font-size:0.82rem;font-weight:700;color:var(--clean);flex:none;}
+  .board-bar{background:var(--line);border-radius:20px;height:5px;overflow:hidden;margin-top:3px;width:100%;}
+  .board-bar-fill{height:100%;background:var(--clean);border-radius:20px;}
+  #toast{
+    position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-8px);
+    background:var(--ink);color:#fff;padding:8px 16px;border-radius:20px;
+    font-size:0.82rem;font-weight:600;opacity:0;pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;z-index:50;white-space:nowrap;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.error{background:#9C3E2C;}
+  @keyframes confettiFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(100vh) rotate(540deg); opacity:0; }
+  }
+  .streak-box{
+    display:flex;align-items:center;gap:8px;
+    background:var(--clean-soft);border-radius:14px;padding:10px 14px;margin-bottom:14px;
+    font-family:'Fraunces',serif;font-weight:600;color:var(--ink);
+  }
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .badge-chip{
+    font-size:0.76rem;font-weight:600;padding:4px 10px;border-radius:20px;
+  }
+  .badge-chip.earned{background:var(--clean);color:#fff;}
+  .badge-chip.locked{background:var(--line);color:var(--ink-soft);}
+  .quest-card{
+    background:linear-gradient(135deg, var(--recipes) 0%, #C1477A 100%);
+    color:#fff;border-radius:16px;padding:14px 16px;margin-bottom:14px;
+  }
+  .quest-card .quest-label{font-size:0.74rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85;}
+  .quest-card h4{font-family:'Fraunces',serif;font-size:1.1rem;margin:4px 0 6px;}
+  .quest-card .quest-reward{font-size:0.8rem;opacity:.95;}
+  .quest-card.done{background:var(--week);}
+  details.section{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:10px 14px;margin-bottom:12px;
+  }
+  details.section > summary{
+    cursor:pointer;font-family:'Fraunces',serif;font-weight:600;
+    font-size:0.95rem;list-style:none;display:flex;justify-content:space-between;align-items:center;
+  }
+  details.section > summary::-webkit-details-marker{display:none;}
+  details.section > summary::after{content:'▾';opacity:.5;font-size:0.8rem;}
+  details.section[open] > summary::after{content:'▴';}
+  details.section > div{margin-top:12px;}
+  .subtask-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .subtask-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:0.78rem;padding:5px 11px;border-radius:20px;cursor:pointer;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);
+  }
+  .subtask-chip.done{background:var(--week-soft);border-color:var(--week);color:var(--week);text-decoration:line-through;}
+  #printArea{display:none;}
+  @media print{
+    @page{ margin: 16mm 14mm; }
+    body{ background:#fff; }
+    #app, #toast{ display:none !important; }
+    #printArea{
+      display:block;
+      font-family:'Inter',sans-serif;
+      color:#20291F;
+      max-width:100%;
+    }
+    .print-recipe{ page-break-inside:avoid; }
+    .print-recipe h2{
+      font-family:'Fraunces',serif;
+      font-weight:600;
+      font-size:1.6rem;
+      margin:0 0 4px;
+      color:#20291F;
+      border-bottom:2px solid #D8622F;
+      padding-bottom:8px;
+    }
+    .print-recipe .meta{
+      font-size:0.8rem;
+      color:#6b6b6b;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin:8px 0 2px;
+    }
+    .print-recipe .source{
+      font-size:0.78rem;
+      color:#8a8a8a;
+      margin-bottom:10px;
+      word-break:break-all;
+    }
+    .print-recipe h4{
+      font-family:'Fraunces',serif;
+      font-size:0.95rem;
+      font-weight:600;
+      margin:18px 0 6px;
+      color:#5F8A3E;
+    }
+    .print-recipe .ing-group{
+      font-weight:600;
+      font-size:0.85rem;
+      margin:10px 0 4px;
+      color:#D8622F;
+    }
+    .print-recipe ul.ing-list{
+      list-style:none;
+      padding:0;
+      margin:0 0 4px;
+    }
+    .print-recipe ul.ing-list li{
+      font-size:0.92rem;
+      padding:4px 0 4px 18px;
+      position:relative;
+      border-bottom:1px dotted #ddd;
+    }
+    .print-recipe ul.ing-list li::before{
+      content:'';
+      position:absolute;
+      left:0; top:11px;
+      width:6px; height:6px;
+      border-radius:50%;
+      background:#D8622F;
+    }
+    .print-recipe ol{
+      padding-left:20px;
+      margin:4px 0;
+    }
+    .print-recipe ol li{
+      font-size:0.92rem;
+      line-height:1.6;
+      margin-bottom:8px;
+    }
+    .print-footer{
+      margin-top:20px;
+      font-size:0.72rem;
+      color:#aaa;
+      text-align:center;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Vorratskammer</h1>
+    <p class="muted">Rezepte, Wochenplan, Einkauf &amp; Putzplan – an einem Ort, geteilt fürs ganze Haus.</p>
+    <div class="divider">✦ ✦ ✦</div>
+    <button class="action ghost small" id="backupBtn" style="margin-top:10px">⇅ Datensicherung</button>
+  </header>
+  <div class="tabs">
+    <button class="tab" data-tab="recipes">Rezepte</button>
+    <button class="tab" data-tab="week">Wochenplan</button>
+    <button class="tab" data-tab="shop">Einkauf</button>
+    <button class="tab" data-tab="clean">Putzplan</button>
+  </div>
+  <div class="card" id="content"><div class="loading">Lädt …</div></div>
+</div>
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+const KEYS = { recipes:'recipes', week:'weekplan', weekNext:'weekplanNext', weekMeta:'weekplanMeta', shop:'shoppinglist', clean:'cleaning' };
+const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+let state = { recipes:[], week:{}, weekNext:{}, weekMeta:{weekStart:null}, shop:[], clean:{members:[], tasks:[]} };
+let activeTab = 'recipes';
+let openRecipeId = null;
+let servingOverrides = {};
+let recipeSearch = '';
+let categoryFilter = '';
+let weekViewMode = 'current';
+
+function getMonday(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = day===0 ? -6 : 1-day;
+  date.setDate(date.getDate()+diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function isoDate(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function addDays(d, n){ const nd = new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+function formatDayHeader(d){
+  return d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit'});
+}
+function formatWeekRange(monday){
+  const sunday = addDays(monday,6);
+  return monday.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) + ' – ' + sunday.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+function parseIngredientLine(line){
+  const t = line.trim();
+  if(!t) return null;
+  if(/:\s*$/.test(t) && !/^[\d.,]/.test(t)) return {header:true, text:t.replace(/:\s*$/,'')};
+  const m = t.match(/^([\d]+(?:[.,]\d+)?)\s*(.*)$/);
+  if(m) return {header:false, amount:parseFloat(m[1].replace(',','.')), rest:m[2]};
+  return {header:false, amount:null, rest:t};
+}
+function formatDe(n){
+  const r = Math.round(n*100)/100;
+  return (r % 1 === 0) ? r.toString() : r.toFixed(2).replace(/0$/,'').replace(/0$/,'').replace('.',',').replace(/,$/,'');
+}
+function formatScaled(n){
+  let r;
+  if(n >= 10) r = Math.round(n);
+  else if(n >= 2) r = Math.round(n*2)/2;
+  else r = Math.round(n*4)/4;
+  return (r % 1 === 0) ? r.toString() : r.toString().replace('.',',');
+}
+const RECIPE_CATEGORY_ICONS = [
+  ['Auflauf','🥘'],['Suppe','🍲'],['Eintopf','🍲'],['Bowl','🥗'],['Salat','🥗'],
+  ['Curry','🍛'],['Pasta','🍝'],['Lasagne','🍝'],['Pizza','🍕'],['Dessert','🍰'],
+  ['Süß','🍰'],['Frühstück','🥐'],['Wok','🥡'],['Grill','🍢'],['Hauptgericht','🍽️']
+];
+function getCategoryIcon(category){
+  const c = (category||'').toLowerCase();
+  const hit = RECIPE_CATEGORY_ICONS.find(([k])=> c.includes(k.toLowerCase()));
+  return hit ? hit[1] : '🍽️';
+}
+function guessCategory(title, ingredients){
+  const text = ((title||'')+' '+(ingredients||'')).toLowerCase();
+  const rules = [
+    [/auflauf/,'Auflauf'], [/suppe|eintopf/,'Suppe'], [/\bbowl\b/,'Bowl'],
+    [/curry/,'Curry'], [/lasagne/,'Auflauf'], [/pizza/,'Pizza'],
+    [/pasta|spaghetti|nudel|spätzle/,'Pasta'], [/salat/,'Salat'],
+    [/kuchen|dessert|nachtisch/,'Dessert'], [/frühstück|porridge|müsli/,'Frühstück']
+  ];
+  for(const [re,cat] of rules){ if(re.test(text)) return cat; }
+  return 'Hauptgericht';
+}
+function renderIngredientsHtml(recipe, factor){
+  return (recipe.ingredients||'').split('\n').map(l=>parseIngredientLine(l)).filter(Boolean).map(l=>{
+    if(l.header) return `<div style="font-weight:600;margin:8px 0 2px;color:var(--recipes)">${esc(l.text)}</div>`;
+    const amountStr = l.amount!=null ? formatScaled(l.amount*factor) + ' ' : '';
+    return `<div>${esc(amountStr)}${esc(l.rest)}</div>`;
+  }).join('');
+}
+function domainFromLink(url){
+  try{ return new URL(url).hostname.replace(/^www\./,''); }
+  catch(e){ return url; }
+}
+function renderStepsHtml(recipe){
+  const steps = (recipe.steps||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/^\d+[\.\)]\s*/,''));
+  if(!steps.length) return '<p class="muted">–</p>';
+  return '<ol style="padding-left:20px;margin:4px 0">' + steps.map(s=>`<li style="margin-bottom:6px">${esc(s)}</li>`).join('') + '</ol>';
+}
+
+const UNITS = ['g','kg','ml','l','tl','el','stk','stück','prise','prisen','bund','zehe','zehen','scheibe','scheiben','dose','dosen','pkg','packung','packungen'];
+function parseAmountUnitName(line){
+  const t = (line||'').trim();
+  const m = t.match(/^([\d]+(?:[.,]\d+)?)\s*([a-zA-ZäöüÄÖÜß]*)\s*(.*)$/);
+  if(!m) return {amount:null, unit:'', name:t};
+  const amount = parseFloat(m[1].replace(',','.'));
+  const token = (m[2]||'').toLowerCase();
+  if(UNITS.includes(token)) return {amount, unit:token, name:m[3].trim()};
+  return {amount, unit:'', name:(m[2]+' '+m[3]).trim()};
+}
+function normalizeName(name){
+  let n = (name||'').toLowerCase().trim().replace(/[.,;]/g,'');
+  if(n.length>4 && n.endsWith('n')) n = n.slice(0,-1);
+  else if(n.length>4 && n.endsWith('e')) n = n.slice(0,-1);
+  return n;
+}
+function effectiveAmount(a){ return a==null ? 1 : a; }
+function addOrMergeShopItem(line){
+  const parsed = parseAmountUnitName(line);
+  const normName = normalizeName(parsed.name);
+  if(!normName) return;
+  const existing = state.shop.find(it=>{
+    if(it.checked) return false;
+    const ex = parseAmountUnitName(it.text);
+    return normalizeName(ex.name)===normName && ex.unit===parsed.unit;
+  });
+  if(existing){
+    const ex = parseAmountUnitName(existing.text);
+    const total = effectiveAmount(ex.amount) + effectiveAmount(parsed.amount);
+    existing.text = formatDe(total) + (parsed.unit? ' '+parsed.unit:'') + ' ' + parsed.name;
+    return;
+  }
+  state.shop.push({id:uid(), text:line, checked:false});
+}
+function consolidateShopList(){
+  const merged = [];
+  state.shop.forEach(it=>{
+    if(it.checked){ merged.push(it); return; }
+    const parsed = parseAmountUnitName(it.text);
+    const normName = normalizeName(parsed.name);
+    const match = merged.find(m=>{
+      if(m.checked) return false;
+      const mp = parseAmountUnitName(m.text);
+      return normalizeName(mp.name)===normName && mp.unit===parsed.unit;
+    });
+    if(match){
+      const mp = parseAmountUnitName(match.text);
+      const total = effectiveAmount(mp.amount) + effectiveAmount(parsed.amount);
+      match.text = formatDe(total) + (parsed.unit?' '+parsed.unit:'') + ' ' + parsed.name;
+    } else merged.push(it);
+  });
+  state.shop = merged;
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+const SUPABASE_URL = 'https://wqmdjrczvirpmpcyavvs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxbWRqcmN6dmlycG1wY3lhdnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2Mzg5NDgsImV4cCI6MjA5OTIxNDk0OH0.jKm3LYqLZoJfvLPKsFm2_L0x94Yfim6f96vqFYnz7K0';
+
+async function loadKey(key, fallback){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/storage?key=eq.${encodeURIComponent(key)}&select=value`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if(!res.ok) return fallback;
+    const data = await res.json();
+    if(data && data.length>0 && data[0].value) return JSON.parse(data[0].value);
+    return fallback;
+  }catch(e){ console.error('Laden fehlgeschlagen', e); return fallback; }
+}
+
+let toastTimer = null;
+function showToast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = isError ? 'show error' : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), isError ? 3500 : 1400);
+}
+async function saveKey(key, value){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/storage`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({key:key, value:JSON.stringify(value), updated_at:new Date().toISOString()})
+    });
+    if(!res.ok) showToast('Speichern fehlgeschlagen – bitte Verbindung prüfen', true);
+    else showToast('Gespeichert ✓');
+  }
+  catch(e){
+    console.error('Speichern fehlgeschlagen', e);
+    showToast('Speichern fehlgeschlagen – bitte Verbindung prüfen', true);
+  }
+}
+
+async function checkWeekRollover(){
+  const thisMonday = isoDate(getMonday(new Date()));
+  const storedStart = state.weekMeta && state.weekMeta.weekStart;
+  if(storedStart === thisMonday) return; // already up to date, nothing to do
+  if(storedStart && storedStart < thisMonday){
+    // a week (or more) has passed since we last recorded a start date:
+    // promote "next week"'s plan to "current", clear "next"
+    state.week = state.weekNext || {};
+    state.weekNext = {};
+    await saveKey(KEYS.week, state.week);
+    await saveKey(KEYS.weekNext, state.weekNext);
+  }
+  state.weekMeta = { weekStart: thisMonday };
+  await saveKey(KEYS.weekMeta, state.weekMeta);
+}
+
+async function loadAll(){
+  state.recipes  = await loadKey(KEYS.recipes, []);
+  state.week     = await loadKey(KEYS.week, {});
+  state.weekNext = await loadKey(KEYS.weekNext, {});
+  state.weekMeta = await loadKey(KEYS.weekMeta, {weekStart:null});
+  await checkWeekRollover();
+  state.shop    = await loadKey(KEYS.shop, []);
+  state.clean   = await loadKey(KEYS.clean, {members:[], tasks:[]});
+  const endedSeason = await checkSeasonRollover();
+  document.getElementById('backupBtn').onclick = ()=> openBackupModal();
+  render();
+  if(endedSeason){
+    triggerConfetti();
+    setTimeout(()=> showToast('🏁 ' + seasonLabel(endedSeason) + ' beendet – neue Saison startet!'), 500);
+  }
+}
+
+function setTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  render();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click', ()=>setTab(b.dataset.tab)));
+
+function render(){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===activeTab));
+  const el = document.getElementById('content');
+  if(activeTab==='recipes') el.innerHTML = viewRecipes();
+  if(activeTab==='week') el.innerHTML = viewWeek();
+  if(activeTab==='shop') el.innerHTML = viewShop();
+  if(activeTab==='clean') el.innerHTML = viewClean();
+  bindEvents();
+}
+
+/* ---------- RECIPES ---------- */
+function printIngredientsHtml(recipe, factor){
+  const lines = (recipe.ingredients||'').split('\n').map(l=>parseIngredientLine(l)).filter(Boolean);
+  let html = '';
+  let inList = false;
+  lines.forEach(l=>{
+    if(l.header){
+      if(inList){ html += '</ul>'; inList = false; }
+      html += `<div class="ing-group">${esc(l.text)}</div>`;
+    } else {
+      if(!inList){ html += '<ul class="ing-list">'; inList = true; }
+      const amountStr = l.amount!=null ? formatScaled(l.amount*factor)+' ' : '';
+      html += `<li>${esc(amountStr)}${esc(l.rest)}</li>`;
+    }
+  });
+  if(inList) html += '</ul>';
+  return html || '<p>–</p>';
+}
+function exportRecipesPdf(recipeId){
+  const r = state.recipes.find(x=>x.id===recipeId);
+  if(!r){ showToast('Rezept nicht gefunden', true); return; }
+  const area = document.getElementById('printArea');
+  const base = r.servings || 4;
+  const meta = [r.category, base?`${base} Portionen`:'', r.prepTime?('Schnibbeln '+r.prepTime):'', r.cookTime?('Zubereitung '+r.cookTime):''].filter(Boolean).join(' · ');
+  area.innerHTML = `<div class="print-recipe">
+    <h2>${esc(r.title)}</h2>
+    <div class="meta">${esc(meta)}</div>
+    ${r.link?`<div class="source">Quelle: ${esc(r.link)}</div>`:''}
+    <h4>Zutaten</h4>
+    ${printIngredientsHtml(r,1)}
+    <h4>Zubereitung</h4>
+    ${renderStepsHtml(r)}
+    <div class="print-footer">Vorratskammer</div>
+  </div>`;
+  window.print();
+}
+
+function allCategories(){
+  const set = new Set();
+  state.recipes.forEach(r=>{
+    (r.category||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(c=>set.add(c));
+  });
+  return Array.from(set).sort((a,b)=>a.localeCompare(b,'de'));
+}
+function viewRecipes(){
+  const term = recipeSearch.trim().toLowerCase();
+  const list = state.recipes.filter(r=>{
+    const matchesTerm = !term || (r.title||'').toLowerCase().includes(term)
+      || (r.category||'').toLowerCase().includes(term)
+      || (r.ingredients||'').toLowerCase().includes(term);
+    const matchesCat = !categoryFilter || (r.category||'').split(',').map(s=>s.trim()).includes(categoryFilter);
+    return matchesTerm && matchesCat;
+  });
+  const catOptions = ['<option value="">Alle Kategorien</option>']
+    .concat(allCategories().map(c=>`<option value="${escAttr(c)}" ${categoryFilter===c?'selected':''}>${getCategoryIcon(c)} ${esc(c)}</option>`)).join('');
+  let html = `<div class="toolbar"><h2 class="section-title" style="margin:0">Rezepte</h2>
+    <div class="row" style="flex:none;gap:6px">
+      <button class="action ghost small" id="linkImportBtn">Von Link</button>
+      <button class="action ghost small" id="importBtn">Import</button>
+      <button class="action" id="addRecipeBtn">+ Rezept</button>
+    </div></div>
+    <div class="row" style="margin-bottom:10px">
+      <input id="recipeSearch" placeholder="Suche nach Titel, Kategorie oder Zutat …" value="${escAttr(recipeSearch)}">
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <select id="categoryFilter" style="flex:1">${catOptions}</select>
+    </div>`;
+  if(!list.length){ html += `<div class="empty">${state.recipes.length? 'Keine Treffer.' : 'Noch keine Rezepte. Leg das erste mit „+ Rezept“ an.'}</div>`; return html; }
+  html += list.map(r=>{
+    const base = r.servings || 4;
+    const current = servingOverrides[r.id] || base;
+    const factor = current / base;
+    return `
+    <div class="recipe-item">
+      <div data-open="${r.id}" style="cursor:pointer">
+        <h3>${esc(r.title)}</h3>
+      </div>
+      <div class="row" style="flex:none;gap:6px;margin:6px 0">
+        <button class="action ghost small" data-pdf="${r.id}">PDF</button>
+        <button class="action ghost small" data-edit="${r.id}">Bearb.</button>
+        <button class="action ghost small" data-del="${r.id}">Löschen</button>
+      </div>
+      ${r.category?`<div style="margin-bottom:4px">${r.category.split(',').map(c=>c.trim()).filter(Boolean).map(c=>`<span class="tag">${getCategoryIcon(c)} ${esc(c)}</span>`).join(' ')}</div>`:''}
+      <div class="recipe-body ${openRecipeId===r.id?'open':''}">
+        ${r.link?`<h4>Quelle</h4><p style="margin:2px 0 10px"><a href="${escAttr(r.link)}" target="_blank" rel="noopener" style="color:var(--recipes)">${esc(r.link)}</a></p>`:''}
+        ${(r.prepTime||r.cookTime)?`<div class="muted" style="margin-bottom:8px">${[r.prepTime?('Schnibbeln '+esc(r.prepTime)):'', r.cookTime?('Zubereitung '+esc(r.cookTime)):''].filter(Boolean).join(' · ')}</div>`:''}
+        ${(r.calories||r.protein)?`<div class="muted" style="margin-bottom:8px">${r.calories?('🔥 '+r.calories+' kcal'):''}${(r.calories&&r.protein)?' · ':''}${r.protein?('💪 '+r.protein+' g Protein'):''} <span style="opacity:.7">(pro Portion, fix)</span></div>`:''}
+        <div class="row" style="align-items:center;gap:8px;margin-bottom:8px;flex:none;max-width:220px">
+          <span class="muted" style="flex:none">Portionen</span>
+          <button class="action ghost small" data-servminus="${r.id}" style="flex:none">–</button>
+          <strong style="flex:none;min-width:18px;text-align:center">${current}</strong>
+          <button class="action ghost small" data-servplus="${r.id}" style="flex:none">+</button>
+        </div>
+        <h4>Zutaten</h4>
+        <div style="font-size:0.9rem;line-height:1.6">${renderIngredientsHtml(r, factor)}</div>
+        <button class="action ghost small" data-toshop="${r.id}" style="margin-top:8px">🛒 Zutaten zur Einkaufsliste</button>
+        <h4 style="margin-top:14px">Zubereitung</h4>
+        ${renderStepsHtml(r)}
+      </div>
+    </div>`;
+  }).join('');
+  return html;
+}
+function recipeModal(existing){
+  const r = existing || {id:null,title:'',category:'',link:'',servings:4,prepTime:'',cookTime:'',calories:'',protein:'',ingredients:'',steps:''};
+  return `<div class="modal-bg" id="modalBg"><div class="modal">
+    <h3>${existing?'Rezept bearbeiten':'Neues Rezept'}</h3>
+    <div class="field"><label>Titel</label><input id="f_title" value="${escAttr(r.title)}" placeholder="z. B. Linsensuppe"></div>
+    <div class="row">
+      <div class="field"><label>Kategorie</label><input id="f_cat" value="${escAttr(r.category)}" placeholder="z. B. Suppe, vegetarisch"></div>
+      <div class="field"><label>Portionen (Basis)</label><input id="f_servings" type="number" min="1" value="${r.servings||4}"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Schnibbelzeit</label><input id="f_prep" value="${escAttr(r.prepTime||'')}" placeholder="z. B. 10 Minuten"></div>
+      <div class="field"><label>Zubereitungszeit</label><input id="f_cook" value="${escAttr(r.cookTime||'')}" placeholder="z. B. 5 Minuten"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Kalorien (pro Portion)</label><input id="f_cal" type="number" min="0" value="${r.calories||''}" placeholder="z. B. 450"></div>
+      <div class="field"><label>Protein (g, pro Portion)</label><input id="f_protein" type="number" min="0" value="${r.protein||''}" placeholder="z. B. 30"></div>
+    </div>
+    <div class="field"><label>Quelle / Original-Link</label><input id="f_link" value="${escAttr(r.link||'')}" placeholder="z. B. Instagram-Link"></div>
+    <div class="field"><label>Zutaten (eine pro Zeile, Mengen zuerst · Zeile mit „:“ am Ende = Gruppen-Überschrift)</label><textarea id="f_ing" placeholder="für die Bowl:
+1,5 TL Olivenöl
+270 g Mühlenhack, vegan
+für die Sauce:
+1,5 EL Gurkenwasser">${esc(r.ingredients)}</textarea></div>
+    <div class="field"><label>Zubereitung (ein Schritt pro Zeile)</label><textarea id="f_steps" placeholder="Zwiebel klein schneiden.
+Öl erhitzen, Hack anbraten.">${esc(r.steps)}</textarea></div>
+    <div class="modal-actions">
+      <button class="action ghost" id="modalCancel">Abbrechen</button>
+      <button class="action" id="modalSave" data-id="${r.id||''}">Speichern</button>
+    </div>
+  </div></div>`;
+}
+
+function importModal(){
+  return `<div class="modal-bg" id="importBg"><div class="modal">
+    <h3>Rezepte importieren</h3>
+    <p class="muted" style="margin-top:-6px">Ein Rezept pro Block, getrennt durch eine Zeile mit <code>---</code>. Felder: <code>Titel:</code>, <code>Kategorie:</code>, <code>Link:</code>, <code>Portionen:</code>, <code>Schnibbelzeit:</code>, <code>Zubereitungszeit:</code>, <code>Kalorien:</code>, <code>Protein:</code>, <code>Zutaten:</code>, <code>Zubereitung:</code>.</p>
+    <div class="field"><textarea id="importText" style="min-height:220px" placeholder="Titel: BigMac-Bowl
+Kategorie: Bowl, vegan
+Link: https://instagram.com/...
+Portionen: 3
+Schnibbelzeit: 10 Minuten
+Zubereitungszeit: 5 Minuten
+Zutaten:
+für die Bowl:
+1,5 TL Olivenöl
+270 g Mühlenhack, vegan
+Zubereitung:
+Zwiebel klein schneiden.
+Öl erhitzen, Hack anbraten.
+---
+Titel: Nächstes Rezept
+..."></textarea></div>
+    <div class="modal-actions">
+      <button class="action ghost" id="importCancel">Abbrechen</button>
+      <button class="action" id="importRun">Importieren</button>
+    </div>
+  </div></div>`;
+}
+function parseImport(text){
+  const blocks = text.split(/^\s*-{3,}\s*$/m).map(b=>b.trim()).filter(Boolean);
+  return blocks.map(block=>{
+    const get = (field, stopFields)=>{
+      const re = new RegExp(field + ':\\s*([\\s\\S]*?)(?=(?:' + stopFields.join('|') + '):|$)', 'i');
+      const m = block.match(re);
+      return m ? m[1].trim() : '';
+    };
+    const fields = ['Titel','Kategorie','Link','Portionen','Schnibbelzeit','Zubereitungszeit','Kalorien','Protein','Zutaten','Zubereitung'];
+    const titleVal = get('Titel', fields.filter(f=>f!=='Titel')) || 'Ohne Titel';
+    const ingVal = get('Zutaten', fields.filter(f=>f!=='Zutaten'));
+    const catVal = get('Kategorie', fields.filter(f=>f!=='Kategorie'));
+    return {
+      id: uid(),
+      title: titleVal,
+      category: catVal || guessCategory(titleVal, ingVal),
+      link: get('Link', fields.filter(f=>f!=='Link')),
+      servings: parseInt(get('Portionen', fields.filter(f=>f!=='Portionen'))) || 4,
+      prepTime: get('Schnibbelzeit', fields.filter(f=>f!=='Schnibbelzeit')),
+      cookTime: get('Zubereitungszeit', fields.filter(f=>f!=='Zubereitungszeit')),
+      calories: parseInt(get('Kalorien', fields.filter(f=>f!=='Kalorien'))) || 0,
+      protein: parseInt(get('Protein', fields.filter(f=>f!=='Protein'))) || 0,
+      ingredients: ingVal,
+      steps: get('Zubereitung', fields.filter(f=>f!=='Zubereitung'))
+    };
+  }).filter(r=>r.title!=='Ohne Titel' || r.ingredients || r.steps);
+}
+function parseDuration(iso){
+  if(!iso) return '';
+  const m = String(iso).match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if(!m || (!m[1] && !m[2])) return '';
+  const h = parseInt(m[1]||0), mnt = parseInt(m[2]||0);
+  const parts = [];
+  if(h) parts.push(h + (h===1?' Stunde':' Stunden'));
+  if(mnt) parts.push(mnt + ' Minuten');
+  return parts.join(' ');
+}
+function parseJsonLdRecipe(data, url){
+  const title = data.name || '';
+  const ingredients = (data.recipeIngredient || data.ingredients || []).join('\n');
+  let steps = '';
+  const instr = data.recipeInstructions;
+  if(Array.isArray(instr)){
+    steps = instr.map(i=>{
+      if(typeof i === 'string') return i;
+      if(i.text) return i.text;
+      if(i.itemListElement) return i.itemListElement.map(x=>x.text||'').join('\n');
+      return '';
+    }).filter(Boolean).join('\n');
+  } else if(typeof instr === 'string'){
+    steps = instr;
+  }
+  let servings = 4;
+  if(data.recipeYield){
+    const y = Array.isArray(data.recipeYield) ? data.recipeYield[0] : data.recipeYield;
+    const m = String(y).match(/\d+/);
+    if(m) servings = parseInt(m[0]);
+  }
+  let calories = 0, protein = 0;
+  if(data.nutrition){
+    const cm = String(data.nutrition.calories||'').match(/[\d.]+/);
+    if(cm) calories = Math.round(parseFloat(cm[0]));
+    const pm = String(data.nutrition.proteinContent||'').match(/[\d.]+/);
+    if(pm) protein = Math.round(parseFloat(pm[0]));
+  }
+  return {
+    id:null, title, category:'', servings,
+    prepTime: parseDuration(data.prepTime),
+    cookTime: parseDuration(data.cookTime),
+    calories, protein, link:url, ingredients, steps
+  };
+}
+const CORS_PROXIES = [
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  url => 'https://thingproxy.freeboard.io/fetch/' + url
+];
+async function fetchViaProxies(url){
+  let lastError = null;
+  for(const buildUrl of CORS_PROXIES){
+    try{
+      const res = await fetch(buildUrl(url));
+      if(res.ok){
+        const html = await res.text();
+        if(html && html.length > 200) return html;
+      }
+    }catch(e){ lastError = e; }
+  }
+  throw lastError || new Error('Alle Auslese-Dienste nicht erreichbar');
+}
+async function fetchRecipeFromLink(url){
+  const html = await fetchViaProxies(url);
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const scripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+  for(const s of scripts){
+    try{
+      const json = JSON.parse(s.textContent);
+      const candidates = Array.isArray(json) ? json : (json['@graph'] || [json]);
+      const found = candidates.find(o => {
+        const t = o && o['@type'];
+        return t === 'Recipe' || (Array.isArray(t) && t.includes('Recipe'));
+      });
+      if(found) return { data: parseJsonLdRecipe(found, url), partial:false };
+    }catch(e){ /* try next script block */ }
+  }
+  const ogTitle = doc.querySelector('meta[property="og:title"]')?.content || '';
+  const ogDesc = doc.querySelector('meta[property="og:description"]')?.content || '';
+  return {
+    data: { id:null, title:ogTitle, category:'', servings:4, prepTime:'', cookTime:'', calories:0, protein:0, link:url, ingredients:ogDesc, steps:'' },
+    partial:true
+  };
+}
+function linkImportModal(){
+  return `<div class="modal-bg" id="linkBg"><div class="modal">
+    <h3>Rezept von Link holen</h3>
+    <p class="muted" style="margin-top:-6px">Funktioniert gut bei Rezept-Webseiten (Chefkoch, WeightWatchers, EatSmarter …). Bei Instagram gibt's keine strukturierten Daten – dort bekommst du Titel & Bildunterschrift als Rohtext zum Selbst-Sortieren, der Link bleibt in jedem Fall erhalten.</p>
+    <div class="field"><label>Link</label><input id="linkUrl" placeholder="https://www.chefkoch.de/rezepte/..."></div>
+    <div class="modal-actions">
+      <button class="action ghost" id="linkCancel">Abbrechen</button>
+      <button class="action" id="linkRun">Rezept holen</button>
+    </div>
+    <p id="linkStatus" class="muted" style="margin-top:10px"></p>
+  </div></div>`;
+}
+function openLinkImportModal(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = linkImportModal();
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('linkCancel').onclick = ()=> document.getElementById('linkBg').remove();
+  document.getElementById('linkRun').onclick = async ()=>{
+    const url = document.getElementById('linkUrl').value.trim();
+    const status = document.getElementById('linkStatus');
+    if(!url){ status.textContent = 'Bitte einen Link eingeben.'; return; }
+    status.textContent = 'Lade Seite …';
+    document.getElementById('linkRun').disabled = true;
+    try{
+      const { data, partial } = await fetchRecipeFromLink(url);
+      document.getElementById('linkBg').remove();
+      openRecipeModal(data);
+      if(partial) setTimeout(()=> showToast('Nur Rohtext gefunden – bitte prüfen & sortieren'), 400);
+      else setTimeout(()=> showToast('Rezeptdaten gefunden ✓'), 400);
+    }catch(e){
+      status.textContent = 'Konnte die Seite nicht auslesen. Link prüfen oder Rezept manuell anlegen.';
+      document.getElementById('linkRun').disabled = false;
+    }
+  };
+}
+function openImportModal(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = importModal();
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('importCancel').onclick = ()=> document.getElementById('importBg').remove();
+  document.getElementById('importRun').onclick = async ()=>{
+    const text = document.getElementById('importText').value;
+    const parsed = parseImport(text);
+    const modal = document.getElementById('importBg').querySelector('.modal');
+    let note = modal.querySelector('.import-note');
+    if(!note){ note = document.createElement('p'); note.className = 'muted import-note'; modal.appendChild(note); }
+    if(!parsed.length){ note.textContent = 'Konnte keine Rezepte erkennen. Bitte Format prüfen.'; return; }
+    state.recipes = state.recipes.concat(parsed);
+    await saveKey(KEYS.recipes, state.recipes);
+    document.getElementById('importBg').remove();
+    render();
+    const doneNote = document.createElement('p');
+    doneNote.className = 'muted';
+    doneNote.style.marginTop = '-6px';
+    doneNote.textContent = parsed.length + ' Rezept(e) importiert.';
+    document.getElementById('content').prepend(doneNote);
+  };
+}
+
+/* ---------- WEEKPLAN ---------- */
+function viewWeek(){
+  const monday = weekViewMode==='current' ? getMonday(new Date()) : addDays(getMonday(new Date()), 7);
+  const weekData = weekViewMode==='current' ? state.week : state.weekNext;
+  let html = `<div class="row" style="margin-bottom:14px;gap:6px">
+    <button class="action ${weekViewMode==='current'?'':'ghost'} small" id="weekModeCurrent" style="flex:1">Diese Woche</button>
+    <button class="action ${weekViewMode==='next'?'':'ghost'} small" id="weekModeNext" style="flex:1">Nächste Woche</button>
+  </div>
+  <div class="toolbar">
+    <strong style="font-family:'Fraunces',serif">${formatWeekRange(monday)}</strong>
+    <button class="action ghost small" id="clearWeekBtn">Woche leeren</button>
+  </div>`;
+  if(!state.recipes.length){ html += `<p class="muted" style="margin-bottom:14px">Tipp: Leg erst ein paar Rezepte an, dann kannst du sie hier einplanen.</p>`; }
+  DAYS.forEach((dayName,i)=>{
+    const dayDate = addDays(monday, i);
+    const entry = weekData[dayName] || {};
+    const lunch = entry.lunch || {};
+    const dinner = entry.dinner || {};
+    const options = (sel)=>['<option value="">– frei –</option>']
+      .concat(state.recipes.map(r=>`<option value="${r.id}" ${sel===r.id?'selected':''}>${esc(r.title)}</option>`)).join('');
+    let kcal=0, protein=0;
+    [lunch, dinner].forEach(m=>{
+      if(m.recipeId){
+        const r = state.recipes.find(x=>x.id===m.recipeId);
+        if(r){ kcal += Number(r.calories)||0; protein += Number(r.protein)||0; }
+      }
+    });
+    const mealBlock = (mealKey, label, meal)=>{
+      const r = meal.recipeId ? state.recipes.find(x=>x.id===meal.recipeId) : null;
+      return `<div class="field"><label>${label}</label>
+        <select data-day="${dayName}" data-meal="${mealKey}" class="weekSelect">${options(meal.recipeId)}</select>
+        ${r ? `<div class="row" style="gap:6px;margin-top:6px;align-items:center">
+          <button class="action ghost small" data-gorecipe="${r.id}" style="flex:none">📖 Rezept</button>
+          <button class="action ghost small" data-togglecooked="${dayName}" data-meal="${mealKey}" style="flex:none">${meal.cooked?'✅ gekocht':'○ offen'}</button>
+          ${(r.calories||r.protein)?`<span class="muted" style="font-size:0.74rem">${r.calories?r.calories+' kcal':''}${(r.calories&&r.protein)?' · ':''}${r.protein?r.protein+' g P':''}</span>`:''}
+        </div>` : ''}
+        <input type="text" data-day="${dayName}" data-meal="${mealKey}" class="weekNote" placeholder="Notiz" value="${escAttr(meal.note||'')}" style="margin-top:6px">
+      </div>`;
+    };
+    html += `<div class="day-block">
+      <h4>${formatDayHeader(dayDate)}</h4>
+      ${mealBlock('lunch','Mittagessen',lunch)}
+      ${mealBlock('dinner','Abendessen',dinner)}
+      ${(kcal||protein)?`<div class="muted" style="margin-top:6px">Tagesbilanz: ${kcal?('🔥 '+kcal+' kcal'):''}${(kcal&&protein)?' · ':''}${protein?('💪 '+protein+' g Protein'):''}</div>`:''}
+    </div>`;
+  });
+  return html;
+}
+
+/* ---------- SHOPPING ---------- */
+function viewShop(){
+  let html = `<div class="toolbar"><h2 class="section-title" style="margin:0">Einkaufsliste</h2>
+    <div class="row" style="flex:none;gap:6px">
+      <button class="action ghost small" id="shareShopBtn">💬 Teilen</button>
+      <button class="action ghost small" id="consolidateBtn">Ähnliche zusammenfassen</button>
+      <button class="action ghost small" id="clearChecked">Erledigte entfernen</button>
+    </div></div>
+    <div class="row" style="margin-bottom:14px">
+      <input id="newItem" placeholder="Artikel hinzufügen …">
+      <button class="action" id="addItemBtn" style="flex:none">+</button>
+    </div>`;
+  if(!state.shop.length){ html += `<div class="empty">Einkaufsliste ist leer.</div>`; return html; }
+  const sortedShop = [...state.shop].sort((a,b)=> (a.checked?1:0) - (b.checked?1:0));
+  html += sortedShop.map(it=>`
+    <div class="shop-item ${it.checked?'checked':''}">
+      <input type="checkbox" data-toggle="${it.id}" ${it.checked?'checked':''}>
+      <span>${esc(it.text)}</span>
+      <button class="action ghost small" data-remove="${it.id}">×</button>
+    </div>`).join('');
+  return html;
+}
+
+/* ---------- CLEANING ---------- */
+const FREQ_OPTIONS = [
+  {value:'Täglich', days:1},
+  {value:'Alle 2 Tage', days:2},
+  {value:'Alle 3 Tage', days:3},
+  {value:'Alle 4 Tage', days:4},
+  {value:'Alle 5 Tage', days:5},
+  {value:'Wöchentlich', days:7},
+  {value:'Alle 2-3 Wochen', days:18},
+  {value:'Monatlich', days:30}
+];
+function triggerConfetti(){
+  const colors = ['#D8622F','#5F8A3E','#C1477A','#DDA324'];
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden;';
+  for(let i=0;i<40;i++){
+    const piece = document.createElement('div');
+    const color = colors[Math.floor(Math.random()*colors.length)];
+    const left = Math.random()*100;
+    const delay = Math.random()*0.3;
+    const duration = 1.4 + Math.random()*0.8;
+    const size = 6 + Math.random()*6;
+    piece.style.cssText = `position:absolute;top:-20px;left:${left}%;width:${size}px;height:${size*0.6}px;background:${color};opacity:.9;border-radius:2px;animation:confettiFall ${duration}s ease-in ${delay}s forwards;`;
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(()=> container.remove(), 2600);
+}
+const APP_URL = 'https://skufab.github.io/Vorratskammer/';
+const NUDGE_TEXTS = {
+  reminder: [
+    t => `Kleiner Hinweis: „${t.task}" wäre mal wieder dran 🧹`,
+    t => `Die Vorratskammer meldet: „${t.task}" steht an 🏠`,
+    t => `„${t.task}" wartet noch auf uns 😄`
+  ],
+  motivation: [
+    t => `Wenn du „${t.task}" schaffst, gibt's Punkte und meinen ewigen Respekt 💪`,
+    t => `Das Haus wäre viel besser gelaunt, wenn „${t.task}" erledigt wäre 😄`,
+    t => `Team-Einsatz gefragt: „${t.task}"! Wir schaffen das 🔥`
+  ],
+  thanks: [
+    t => `Danke, dass du „${t.task}" gemacht hast! 🙌`,
+    t => `„${t.task}" erledigt – du bist die Beste! ✨`
+  ]
+};
+function withAppLink(text){
+  return text + '\n\n👉 ' + APP_URL;
+}
+function openWhatsApp(text){
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+function nudgeModal(taskId){
+  const t = state.clean.tasks.find(x=>x.id===taskId);
+  if(!t) return '';
+  const status = taskStatus(t);
+  const statusNote = status==='overdue' ? ' (aktuell überfällig)' : status==='warning' ? ' (bald fällig)' : '';
+  return `<div class="modal-bg" id="nudgeBg"><div class="modal">
+    <h3>Nachricht zu „${esc(t.task)}"</h3>
+    <p class="muted" style="margin-top:-6px">${esc(t.task)}${statusNote} · öffnet WhatsApp mit fertigem Text, Empfänger wählst du dort.</p>
+    <div class="field">
+      <button class="action" style="width:100%;margin-bottom:8px" data-nudge="reminder" data-task="${t.id}">🔔 Erinnern</button>
+      <button class="action" style="width:100%;margin-bottom:8px" data-nudge="motivation" data-task="${t.id}">💪 Motivieren</button>
+      <button class="action ghost" style="width:100%;margin-bottom:12px" data-nudge="thanks" data-task="${t.id}">🙌 Danke sagen</button>
+      <p class="muted" style="font-size:0.78rem;margin:0 0 6px">Öffnet die falsche WhatsApp-App? Text stattdessen kopieren:</p>
+      <div class="row" style="gap:6px">
+        <button class="action ghost small" style="flex:1" data-copynudge="reminder" data-task="${t.id}">🔔 kopieren</button>
+        <button class="action ghost small" style="flex:1" data-copynudge="motivation" data-task="${t.id}">💪 kopieren</button>
+        <button class="action ghost small" style="flex:1" data-copynudge="thanks" data-task="${t.id}">🙌 kopieren</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="action ghost" id="nudgeCancel">Schließen</button>
+    </div>
+  </div></div>`;
+}
+function openNudgeModal(taskId){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = nudgeModal(taskId);
+  if(!wrap.firstChild) return;
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('nudgeCancel').onclick = ()=> document.getElementById('nudgeBg').remove();
+  document.querySelectorAll('[data-nudge]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const t = state.clean.tasks.find(x=>x.id===btn.dataset.task);
+      const variants = NUDGE_TEXTS[btn.dataset.nudge];
+      const text = withAppLink(variants[Math.floor(Math.random()*variants.length)](t));
+      openWhatsApp(text);
+      document.getElementById('nudgeBg').remove();
+    };
+  });
+  document.querySelectorAll('[data-copynudge]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const t = state.clean.tasks.find(x=>x.id===btn.dataset.task);
+      const variants = NUDGE_TEXTS[btn.dataset.copynudge];
+      const text = withAppLink(variants[Math.floor(Math.random()*variants.length)](t));
+      try{
+        await navigator.clipboard.writeText(text);
+        document.getElementById('nudgeBg').remove();
+        showToast('Text kopiert ✓');
+      }catch(e){
+        showToast('Kopieren nicht möglich – bitte manuell markieren', true);
+      }
+    };
+  });
+}
+const TASK_RANKS = ['Neuland','Bekannt','Vertraut','Eingespielt','Routine','Perfektioniert'];
+function taskMastery(task){
+  const done = task.completedCount || 0;
+  const thresholds = [0,3,8,15,25,40];
+  let idx = 0;
+  for(let i=thresholds.length-1;i>=0;i--){ if(done>=thresholds[i]){ idx=i; break; } }
+  const nextAt = thresholds[idx+1] || null;
+  const prevAt = thresholds[idx];
+  return {
+    rank: TASK_RANKS[idx], level: idx+1, done,
+    nextAt,
+    progress: nextAt ? ((done-prevAt)/(nextAt-prevAt))*100 : 100
+  };
+}
+const TASK_BADGES = [
+  {at:5,  icon:'🥉', label:'5×'},
+  {at:15, icon:'🥈', label:'15×'},
+  {at:30, icon:'🥇', label:'30×'},
+  {at:50, icon:'💎', label:'50×'}
+];
+function taskXpValue(task){
+  const days = parseFreqDays(task.freq) || 7;
+  if(days >= 30) return 25;
+  if(days >= 14) return 20;
+  if(days >= 7) return 15;
+  return 10;
+}
+const PRIORITIES = {
+  hoch:   {label:'Hoch',   icon:'🔴', weight:3},
+  mittel: {label:'Mittel', icon:'🟡', weight:2},
+  niedrig:{label:'Niedrig',icon:'⚪', weight:1}
+};
+function taskPriority(task){ return task.priority || 'mittel'; }
+function urgencyScore(task){
+  const statusWeight = {overdue:100, warning:50, ok:10, neutral:20}[taskStatus(task)] ?? 20;
+  const prio = PRIORITIES[taskPriority(task)] || PRIORITIES.mittel;
+  return statusWeight * prio.weight;
+}
+function sortTasksByUrgency(tasks){
+  return [...tasks].sort((a,b)=> urgencyScore(b) - urgencyScore(a));
+}
+function buildShopMessage(){
+  const open = state.shop.filter(i=>!i.checked);
+  if(!open.length) return null;
+  const lines = open.map(i=>'• ' + i.text).join('\n');
+  return `🛒 Einkaufsliste (${open.length} offen):\n${lines}`;
+}
+function openShopShareModal(){
+  const msg = buildShopMessage();
+  if(!msg){ showToast('Keine offenen Artikel zum Teilen', true); return; }
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `<div class="modal-bg" id="shopShareBg"><div class="modal">
+    <h3>Einkaufsliste teilen</h3>
+    <p class="muted" style="margin-top:-6px">Sendet alle noch offenen Artikel plus Link zur App.</p>
+    <div class="field"><textarea readonly style="min-height:120px;font-size:0.82rem">${esc(withAppLink(msg))}</textarea></div>
+    <div class="row" style="gap:6px">
+      <button class="action" style="flex:1" id="shopShareSend">💬 Per WhatsApp</button>
+      <button class="action ghost" style="flex:1" id="shopShareCopy">Text kopieren</button>
+    </div>
+    <div class="modal-actions">
+      <button class="action ghost" id="shopShareCancel">Schließen</button>
+    </div>
+  </div></div>`;
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('shopShareCancel').onclick = ()=> document.getElementById('shopShareBg').remove();
+  document.getElementById('shopShareSend').onclick = ()=>{
+    openWhatsApp(withAppLink(msg));
+    document.getElementById('shopShareBg').remove();
+  };
+  document.getElementById('shopShareCopy').onclick = async ()=>{
+    try{
+      await navigator.clipboard.writeText(withAppLink(msg));
+      document.getElementById('shopShareBg').remove();
+      showToast('Einkaufsliste kopiert ✓');
+    }catch(e){ showToast('Kopieren nicht möglich', true); }
+  };
+}
+function dailyQuestTask(){
+  const tasks = (state.clean.tasks||[]).filter(t=>parseFreqDays(t.freq));
+  if(!tasks.length) return null;
+  const ranked = sortTasksByUrgency(tasks);
+  const pool = ranked.slice(0, Math.min(3, ranked.length));
+  const today = isoDate(new Date());
+  let seed = 0;
+  for(const ch of today) seed += ch.charCodeAt(0);
+  return pool[seed % pool.length];
+}
+function questDoneToday(){
+  return (state.clean.questDone || null) === isoDate(new Date());
+}
+async function applySubtask(t, sub, who){
+  const members = state.clean.members || [];
+  const msgs = [];
+  const moodBeforeAction = houseMood().percent;
+  const overdueDaysBefore = t.lastRotated
+    ? Math.max(0, Math.floor((Date.now() - new Date(t.lastRotated).getTime()) / 86400000))
+    : 0;
+  if(sub.done){
+    // untick
+    sub.done = false;
+    sub.doneBy = null;
+  } else {
+    sub.done = true;
+    sub.doneBy = who || null;
+    if(who){
+      const share = Math.max(3, Math.round(taskXpValue(t) / t.subtasks.length));
+      state.clean.points = state.clean.points || {};
+      state.clean.points[who] = (state.clean.points[who]||0) + share;
+      const cat = t.category || 'Sonstiges';
+      state.clean.skills = state.clean.skills || {};
+      state.clean.skills[who] = state.clean.skills[who] || {};
+      state.clean.skills[who][cat] = (state.clean.skills[who][cat]||0) + 4;
+      state.clean.subtaskCount = (state.clean.subtaskCount||0) + 1;
+      msgs.push(`${who} +${share} Punkte für „${sub.name}"`);
+    }
+  }
+
+  const allDone = t.subtasks.length > 0 && t.subtasks.every(s=>s.done);
+  let lastHelpers = 0;
+  if(allDone){
+    const helpers = [...new Set(t.subtasks.map(s=>s.doneBy).filter(Boolean))];
+    lastHelpers = helpers.length;
+    t.completedCount = (t.completedCount||0) + 1;
+    t.lastRotated = new Date().toISOString();
+    t.doneBy = t.doneBy || {};
+    helpers.forEach(h=>{ t.doneBy[h] = (t.doneBy[h]||0) + 1; });
+    if(!t.firstDoneBy && helpers.length){ t.firstDoneBy = helpers.join(' & '); t.firstDoneAt = new Date().toISOString(); }
+    const n = members.length;
+    if(n>0) t.assigneeIdx = (t.assigneeIdx+1) % n;
+    t.subtasks.forEach(s=>{ s.done=false; s.doneBy=null; });
+
+    const today = isoDate(new Date());
+    state.clean.streak = state.clean.streak || {count:0, lastDate:null};
+    if(state.clean.streak.lastDate !== today){
+      const yesterday = isoDate(addDays(new Date(), -1));
+      state.clean.streak.count = (state.clean.streak.lastDate === yesterday) ? state.clean.streak.count + 1 : 1;
+      state.clean.streak.lastDate = today;
+    }
+    msgs.unshift(helpers.length > 1
+      ? `🎉 „${t.task}" gemeinsam erledigt (${helpers.join(' & ')})!`
+      : `🎉 „${t.task}" komplett erledigt!`);
+    triggerConfetti();
+  }
+
+  const helpersCount = t.subtasks ? new Set(t.subtasks.map(s=>s.doneBy).filter(Boolean)).size : 1;
+  const secrets = await checkSecretBadges(buildSecretContext({
+    category: t.category,
+    expectedDays: parseFreqDays(t.freq) || 7,
+    overdueDays: overdueDaysBefore,
+    helpers: Math.max(1, lastHelpers || helpersCount),
+    moodBefore: moodBeforeAction
+  }));
+  secrets.forEach(b=> msgs.push(`${b.icon} Geheimes Abzeichen: „${b.name}" – ${b.hint}`));
+  if(secrets.length) triggerConfetti();
+
+  await saveKey(KEYS.clean, state.clean);
+  render();
+  msgs.forEach((m,i)=> setTimeout(()=> showToast(m), 300 + i*1900));
+}
+const SEASON_NAMES = ['Winter','Frühling','Sommer','Herbst'];
+function currentSeason(d = new Date()){
+  const q = Math.floor(d.getMonth()/3);
+  return { id: d.getFullYear()+'-Q'+(q+1), label: SEASON_NAMES[q]+' '+d.getFullYear(), quarter:q, year:d.getFullYear() };
+}
+function seasonDaysLeft(){
+  const now = new Date();
+  const q = Math.floor(now.getMonth()/3);
+  const end = new Date(now.getFullYear(), q*3+3, 1);
+  return Math.max(0, Math.ceil((end - now)/86400000));
+}
+async function checkSeasonRollover(){
+  const season = currentSeason();
+  const stored = state.clean.season;
+  if(!stored){
+    state.clean.season = { id: season.id, label: season.label };
+    await saveKey(KEYS.clean, state.clean);
+    return;
+  }
+  if(stored.id === season.id) return;
+
+  const points = state.clean.points || {};
+  const total = Object.values(points).reduce((s,p)=>s+p, 0);
+  if(total > 0){
+    state.clean.seasonHistory = state.clean.seasonHistory || [];
+    state.clean.seasonHistory.unshift({
+      id: stored.id,
+      label: stored.label,
+      points: {...points},
+      total,
+      topLevel: Math.max(...Object.values(points).map(p=>levelFor(p).level), 1),
+      endedAt: new Date().toISOString()
+    });
+    state.clean.seasonHistory = state.clean.seasonHistory.slice(0, 12);
+  }
+  state.clean.points = {};
+  state.clean.skills = {};
+  state.clean.season = { id: season.id, label: season.label };
+  await saveKey(KEYS.clean, state.clean);
+  setTimeout(()=>{
+    triggerConfetti();
+    showToast('🏁 Neue Saison: ' + season.label + '!');
+  }, 600);
+}
+const SEASONS = [
+  {key:'fruehling', label:'Frühling', icon:'🌱', months:[2,3,4]},
+  {key:'sommer',    label:'Sommer',   icon:'☀️', months:[5,6,7]},
+  {key:'herbst',    label:'Herbst',   icon:'🍂', months:[8,9,10]},
+  {key:'winter',    label:'Winter',   icon:'❄️', months:[11,0,1]}
+];
+function currentSeason(d = new Date()){
+  const m = d.getMonth();
+  const season = SEASONS.find(s=>s.months.includes(m));
+  // Winter spans the year boundary: Dec belongs to the season year of the following Jan/Feb
+  const year = (season.key==='winter' && m===11) ? d.getFullYear()+1 : d.getFullYear();
+  return { ...season, year, id: season.key + '-' + year };
+}
+async function checkSeasonRollover(){
+  const now = currentSeason();
+  const stored = state.clean.season;
+  if(!stored || !stored.id){
+    state.clean.season = {id: now.id, startedAt: isoDate(new Date())};
+    await saveKey(KEYS.clean, state.clean);
+    return null;
+  }
+  if(stored.id === now.id) return null;
+
+  // season changed: archive the finished one and reset points/skills
+  const prevPoints = state.clean.points || {};
+  const total = Object.values(prevPoints).reduce((s,p)=>s+p,0);
+  state.clean.seasonHistory = state.clean.seasonHistory || [];
+  state.clean.seasonHistory.push({
+    id: stored.id,
+    endedAt: isoDate(new Date()),
+    points: {...prevPoints},
+    total
+  });
+  if(state.clean.seasonHistory.length > 12) state.clean.seasonHistory = state.clean.seasonHistory.slice(-12);
+
+  state.clean.points = {};
+  state.clean.skills = {};
+  state.clean.season = {id: now.id, startedAt: isoDate(new Date())};
+  await saveKey(KEYS.clean, state.clean);
+  return stored.id;
+}
+function seasonLabel(id){
+  if(!id) return '';
+  const [key, year] = id.split('-');
+  const s = SEASONS.find(x=>x.key===key);
+  return s ? `${s.icon} ${s.label} ${year}` : id;
+}
+const SECRET_BADGES = [
+  {id:'nachtschicht', icon:'🦉', name:'Nachtschicht', hint:'Nach 23 Uhr erledigt',
+    test: c => c.hour >= 23 || c.hour < 4},
+  {id:'frueh', icon:'🌅', name:'Dem Morgen sei Dank', hint:'Vor 7 Uhr erledigt',
+    test: c => c.hour >= 4 && c.hour < 7},
+  {id:'sonntagsheld', icon:'⛪', name:'Sonntagsheld', hint:'An einem Sonntag erledigt',
+    test: c => c.weekday === 0},
+  {id:'montagstrotz', icon:'😤', name:'Montags trotzdem', hint:'Montag vor 9 Uhr erledigt',
+    test: c => c.weekday === 1 && c.hour < 9},
+  {id:'archaeologe', icon:'🏺', name:'Archäologe', hint:'Etwas erledigt, das ewig überfällig war',
+    test: c => c.overdueDays >= (c.expectedDays * 2)},
+  {id:'doppelpass', icon:'🤝', name:'Doppelpass', hint:'Aufgabe zu zweit abgeschlossen',
+    test: c => c.helpers >= 2},
+  {id:'gluecksstraehne', icon:'🍀', name:'Glückssträhne', hint:'Dreimal kritischer Erfolg',
+    test: c => c.criticalTotal >= 3},
+  {id:'putzrausch', icon:'🌪️', name:'Putzrausch', hint:'Drei Aufgaben an einem Tag',
+    test: c => c.todayCount >= 3},
+  {id:'marathon', icon:'🏃', name:'Wochenmarathon', hint:'7 Tage Serie',
+    test: c => c.streak >= 7},
+  {id:'kellerkind', icon:'🕯️', name:'Kellerkind', hint:'Im Keller aufgeräumt',
+    test: c => c.category === 'Keller'},
+  {id:'gruenerdaumen', icon:'🪴', name:'Grüner Daumen', hint:'Fünfmal im Garten aktiv',
+    test: c => c.categoryCount['Garten'] >= 5},
+  {id:'kachelkoenig', icon:'👑', name:'König der Kacheln', hint:'Zehnmal das Bad gemacht',
+    test: c => c.categoryCount['Bad'] >= 10},
+  {id:'perfektionist', icon:'💠', name:'Perfektionist', hint:'Alles gleichzeitig im grünen Bereich',
+    test: c => c.moodPercent >= 95},
+  {id:'phoenix', icon:'🔥', name:'Phönix aus der Asche', hint:'Aus tiefroter Haus-Laune zurückgekämpft',
+    test: c => c.moodBefore < 30 && c.moodPercent >= 60},
+  {id:'kleinvieh', icon:'🐜', name:'Kleinvieh macht auch Mist', hint:'20 Teilaufgaben abgehakt',
+    test: c => c.subtaskTotal >= 20},
+  {id:'saisonstart', icon:'🎬', name:'Saisoneröffner', hint:'Erste Aufgabe einer neuen Saison',
+    test: c => c.seasonTotal <= 1},
+  {id:'freitag13', icon:'🐈‍⬛', name:'Trotz allem', hint:'An einem Freitag, den 13.',
+    test: c => c.weekday === 5 && c.dayOfMonth === 13},
+  {id:'zentaur', icon:'💯', name:'Die magischen 100', hint:'100 Punkte in einer Saison',
+    test: c => c.seasonPoints >= 100}
+];
+async function checkSecretBadges(ctx){
+  state.clean.secrets = state.clean.secrets || {};
+  const newly = [];
+  for(const b of SECRET_BADGES){
+    if(state.clean.secrets[b.id]) continue;
+    let hit = false;
+    try{ hit = !!b.test(ctx); }catch(e){ hit = false; }
+    if(hit){
+      state.clean.secrets[b.id] = isoDate(new Date());
+      newly.push(b);
+    }
+  }
+  return newly;
+}
+function buildSecretContext(extra){
+  const now = new Date();
+  const points = state.clean.points || {};
+  const tasks = state.clean.tasks || [];
+  const categoryCount = {};
+  tasks.forEach(t=>{
+    if(t.category) categoryCount[t.category] = (categoryCount[t.category]||0) + (t.completedCount||0);
+  });
+  return {
+    hour: now.getHours(),
+    weekday: now.getDay(),
+    dayOfMonth: now.getDate(),
+    streak: (state.clean.streak||{}).count || 0,
+    seasonPoints: Object.values(points).reduce((s,p)=>s+p,0),
+    seasonTotal: tasks.reduce((s,t)=>s+(t.completedCount||0),0),
+    criticalTotal: state.clean.criticalCount || 0,
+    subtaskTotal: state.clean.subtaskCount || 0,
+    todayCount: (state.clean.dayLog && state.clean.dayLog.date === isoDate(now)) ? state.clean.dayLog.count : 0,
+    moodPercent: houseMood().percent,
+    categoryCount,
+    ...extra
+  };
+}
+function parseFreqDays(freq){
+  const exact = FREQ_OPTIONS.find(o=> o.value.toLowerCase()===((freq||'').trim().toLowerCase()));
+  if(exact) return exact.days;
+  const f = (freq||'').toLowerCase();
+  let m;
+  if(/täglich|jeden tag|1x.*tag/.test(f)) return 1;
+  if(m = f.match(/alle\s+(\d+)\s*tag/)) return parseInt(m[1]);
+  if(/zweiwöchentlich|vierzehntägig|alle 2 wochen/.test(f)) return 14;
+  if(m = f.match(/alle\s+(\d+)\s*woche/)) return parseInt(m[1])*7;
+  if(/wöchentlich|jede woche|1x.*woche|einmal.*woche/.test(f)) return 7;
+  if(m = f.match(/alle\s+(\d+)\s*monat/)) return parseInt(m[1])*30;
+  if(/monatlich|jeden monat|1x.*monat|einmal.*monat/.test(f)) return 30;
+  return null;
+}
+function daysSinceCalendar(iso){
+  const d = new Date(iso);
+  const now = new Date();
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((end-start)/86400000);
+}
+function taskStatus(task){
+  const expected = parseFreqDays(task.freq);
+  if(!expected) return 'neutral';
+  if(!task.lastRotated) return 'overdue';
+  const days = daysSinceCalendar(task.lastRotated);
+  if(days > expected) return 'overdue';
+  if(days >= expected*0.7) return 'warning';
+  return 'ok';
+}
+function statusLabel(status){
+  return {ok:'im Rhythmus', warning:'bald fällig', overdue:'überfällig', neutral:'kein Rhythmus erkannt'}[status] || '';
+}
+function statusIcon(status){
+  return {ok:'🌿', warning:'⏰', overdue:'🔺', neutral:'➖'}[status] || '';
+}
+const CATEGORY_ICONS = {'Küche':'🍳','Wohnzimmer':'🛋️','Bad':'🛁','Wohnung':'🏠','Keller':'📦','Garten':'🪴','Garage':'🚗','Schlafzimmer':'🛏️'};
+const SKILL_TITLES = ['Neuling','Lehrling','Geübt','Erfahren','Routinier','Experte','Virtuose','Meister'];
+function skillLevelFor(xp){
+  const span = 50;
+  const idx = Math.min(SKILL_TITLES.length-1, Math.floor(xp/span));
+  return { level: idx+1, title: SKILL_TITLES[idx], into: xp-idx*span, span };
+}
+const LEVEL_TITLES = ['Frischling','Lehrling','Kehrgeselle','Staubwedel-Novize','Putzgeselle','Ordnungshüter','Sauberkeits-Adept','Glanz-Virtuose','Haushalts-Champion','Meister des Lappens','Legende des Lappens','Hüter der Vorratskammer'];
+function levelFor(points){
+  const span = 80;
+  const idx = Math.min(LEVEL_TITLES.length-1, Math.floor(points/span));
+  return { level: idx+1, title: LEVEL_TITLES[idx], into: points - idx*span, span };
+}
+function tierFor(percent){
+  if(percent>=80) return 'happy';
+  if(percent>=50) return 'ok';
+  if(percent>=25) return 'meh';
+  return 'bad';
+}
+const TIER_PHRASES = {
+  happy: ['glänzt vor Stolz ✨','strahlt förmlich 🌟','ist bestens gelaunt 😄','könnte nicht zufriedener sein'],
+  ok:    ['ist ganz zufrieden 🙂','fühlt sich wohl','läuft rund','hat nichts zu meckern'],
+  meh:   ['könnte etwas Liebe vertragen 😐','wird langsam ungeduldig','mault leise vor sich hin','schielt schon zum Putzlappen'],
+  bad:   ['fühlt sich vernachlässigt 😟','seufzt hörbar','sehnt sich nach Aufmerksamkeit','ruft laut nach Hilfe 😤']
+};
+function randomPhrase(tier){ const arr = TIER_PHRASES[tier]; return arr[Math.floor(Math.random()*arr.length)]; }
+function houseMoodByCategory(){
+  const groups = {};
+  (state.clean.tasks||[]).forEach(t=>{
+    if(!parseFreqDays(t.freq)) return;
+    const cat = t.category || 'Sonstiges';
+    groups[cat] = groups[cat] || [];
+    groups[cat].push(t);
+  });
+  const scoreOf = {ok:100, warning:60, overdue:20};
+  return Object.keys(groups).map(cat=>{
+    const tasks = groups[cat];
+    const sum = tasks.reduce((s,t)=> s + (scoreOf[taskStatus(t)] ?? 80), 0);
+    return { cat, percent: Math.round(sum/tasks.length) };
+  });
+}
+function houseMood(){
+  const tasks = (state.clean.tasks||[]).filter(t=>parseFreqDays(t.freq));
+  if(!tasks.length) return {percent:100, face:'🙂', label:'Alles ruhig'};
+  const scoreOf = {ok:100, warning:60, overdue:20};
+  const sum = tasks.reduce((s,t)=> s + (scoreOf[taskStatus(t)] ?? 80), 0);
+  const percent = Math.round(sum/tasks.length);
+  let face='😟', label='Braucht Aufmerksamkeit';
+  if(percent>=80){ face='😄'; label='Bestens gelaunt'; }
+  else if(percent>=50){ face='🙂'; label='Ganz zufrieden'; }
+  else if(percent>=25){ face='😐'; label='Etwas mürrisch'; }
+  return {percent, face, label};
+}
+function moodColor(percent){
+  if(percent>=80) return '#5F8A3E';
+  if(percent>=50) return '#B98A3E';
+  if(percent>=25) return '#C77B3E';
+  return '#B0503A';
+}
+function formatLastRotated(iso){
+  if(!iso) return 'noch nie weitergegeben';
+  const d = new Date(iso);
+  const dateStr = d.toLocaleDateString('de-DE');
+  const timeStr = d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+  const days = daysSinceCalendar(iso);
+  const daysText = days<=0 ? 'heute' : (days===1 ? 'gestern' : `vor ${days} Tagen`);
+  return `zuletzt weitergegeben: ${dateStr}, ${timeStr} Uhr (${daysText})`;
+}
+function viewClean(){
+  const members = state.clean.members || [];
+  const points = state.clean.points || {};
+  const tasks = state.clean.tasks || [];
+  const mood = houseMood();
+  const catMoods = houseMoodByCategory();
+  const streak = state.clean.streak || {count:0, lastDate:null};
+  const streakActive = streak.lastDate === isoDate(new Date()) || streak.lastDate === isoDate(addDays(new Date(),-1));
+  let html = `<h2 class="section-title">Putzplan</h2>`;
+  const season = currentSeason();
+  const seasonPoints = Object.values(points).reduce((s,p)=>s+p,0);
+  html += `<div class="streak-box" style="background:var(--week-soft)">${season.icon} Saison ${season.label} ${season.year} · ${seasonPoints} Punkte</div>`;
+  if(streak.count > 0 && streakActive){
+    html += `<div class="streak-box">🔥 ${streak.count} Tag${streak.count===1?'':'e'} in Folge etwas erledigt</div>`;
+  } else if(streak.count > 0){
+    html += `<div class="streak-box" style="opacity:.6">💤 Serie unterbrochen (war bei ${streak.count} Tagen) – heute weitermachen?</div>`;
+  }
+  html += `<div class="mood-box">
+    <div class="mood-top">
+      <span class="mood-label">Haus-Laune: ${esc(mood.label)}</span>
+      <button class="face" id="moodFace" title="Tippen für einen Kommentar">${mood.face}</button>
+    </div>
+    <div class="mood-track"><div class="mood-fill" style="width:${mood.percent}%;background:${moodColor(mood.percent)}"></div></div>
+    </div>`;
+
+  const quest = dailyQuestTask();
+  if(quest){
+    const done = questDoneToday();
+    html += `<div class="quest-card ${done?'done':''}">
+      <div class="quest-label">${done ? 'Tagesquest erfüllt' : 'Tagesquest heute'}</div>
+      <h4>${done ? '✅ ' : '🎯 '}${esc(quest.task)}</h4>
+      <div class="quest-reward">${done ? 'Stark! Morgen wartet die nächste Quest.' : 'Doppelte Punkte (+' + (taskXpValue(quest)*2) + ') wenn du sie heute schaffst'}</div>
+    </div>`;
+  }
+
+  if(catMoods.length){
+    html += `<details class="section"><summary>Bereiche im Blick</summary><div>
+      ${catMoods.map(cm=>`
+        <button class="need-row" data-needcat="${escAttr(cm.cat)}">
+          <span class="need-icon">${CATEGORY_ICONS[cm.cat]||'✨'}</span>
+          <span class="need-label">${esc(cm.cat)}</span>
+          <span class="need-track"><span class="need-fill" style="width:${cm.percent}%;background:${moodColor(cm.percent)}"></span></span>
+        </button>`).join('')}
+    </div></details>`;
+  }
+
+  if(members.length){
+    const teamPoints = Object.values(points).reduce((s,p)=>s+p, 0);
+    const MILESTONES = [
+      {at:100, label:'Sauberer Start'}, {at:250, label:'Eingespielt'},
+      {at:500, label:'Team Vorratskammer'}, {at:1000, label:'Haus-Legenden'}
+    ];
+    html += `<details class="section"><summary>Charaktere &amp; Fortschritt</summary><div>
+      ${members.map(m=>{
+        const lvl = levelFor(points[m]||0);
+        const memberSkills = (state.clean.skills||{})[m] || {};
+        const cats = Object.keys(CATEGORY_ICONS).filter(c=>memberSkills[c]);
+        return `<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <strong style="font-family:'Fraunces',serif">${esc(m)}</strong>
+            <span class="board-title">Level ${lvl.level} · ${esc(lvl.title)}</span>
+          </div>
+          <div class="board-bar" style="margin-top:4px"><div class="board-bar-fill" style="width:${(lvl.into/lvl.span)*100}%"></div></div>
+          ${cats.length ? cats.map(c=>{
+            const sk = skillLevelFor(memberSkills[c]);
+            return `<div style="margin-top:6px">
+              <div style="font-size:0.78rem;color:var(--ink-soft)">${CATEGORY_ICONS[c]} ${esc(c)} · ${esc(sk.title)}</div>
+              <div class="board-bar"><div class="board-bar-fill" style="width:${(sk.into/sk.span)*100}%"></div></div>
+            </div>`;
+          }).join('') : `<div class="muted" style="font-size:0.78rem;margin-top:6px">Noch keine Skills erworben.</div>`}
+        </div>`;
+      }).join('')}
+      <div class="mood-label" style="margin-top:4px">Gemeinsame Meilensteine (${teamPoints} Punkte)</div>
+      <div class="badge-row">${MILESTONES.map(ms=>{
+        const earned = teamPoints >= ms.at;
+        return `<span class="badge-chip ${earned?'earned':'locked'}">${earned?'🏅':'🔒'} ${ms.at} – ${esc(ms.label)}</span>`;
+      }).join('')}</div>
+    </div></details>`;
+  }
+
+  const history = state.clean.seasonHistory || [];
+  if(history.length){
+    html += `<details class="section"><summary>Vergangene Saisons</summary><div>
+      ${[...history].reverse().map(h=>{
+        const names = Object.entries(h.points||{}).sort((a,b)=>b[1]-a[1]);
+        return `<div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <strong style="font-family:'Fraunces',serif">${seasonLabel(h.id)}</strong>
+          <div class="muted" style="font-size:0.78rem">${h.total} Punkte gesamt${names.length?' · '+names.map(([n,p])=>esc(n)+' '+p).join(' · '):''}</div>
+        </div>`;
+      }).join('')}
+    </div></details>`;
+  }
+
+  const secretsEarned = state.clean.secrets || {};
+  const earnedCount = Object.keys(secretsEarned).filter(k=>SECRET_BADGES.some(b=>b.id===k)).length;
+  html += `<details class="section"><summary>Geheime Trophäen (${earnedCount}/${SECRET_BADGES.length})</summary><div>
+    ${SECRET_BADGES.map(b=>{
+      const earned = secretsEarned[b.id];
+      if(earned){
+        return `<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+          <span style="font-size:1.3rem;flex:none">${b.icon}</span>
+          <div>
+            <strong style="font-size:0.88rem">${esc(b.name)}</strong>
+            <div class="muted" style="font-size:0.76rem">${esc(b.hint)} · freigeschaltet am ${new Date(earned).toLocaleDateString('de-DE')}</div>
+          </div>
+        </div>`;
+      }
+      return `<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;opacity:.45">
+        <span style="font-size:1.3rem;flex:none">🔒</span>
+        <div><strong style="font-size:0.88rem">???</strong>
+        <div class="muted" style="font-size:0.76rem">Noch nicht entdeckt</div></div>
+      </div>`;
+    }).join('')}
+  </div></details>`;
+
+  html += `<details class="section"><summary>Haushaltsmitglieder</summary><div>
+      <div>${members.map((m,i)=>`<span class="member-chip">${esc(m)}<button data-rmMember="${i}">×</button></span>`).join('') || '<span class="muted">Noch niemand hinzugefügt</span>'}</div>
+      <div class="row" style="margin-top:8px">
+        <input id="newMember" placeholder="Name">
+        <button class="action ghost small" id="addMemberBtn" style="flex:none">+ Person</button>
+      </div>
+    </div></details>
+    <div class="toolbar" style="margin-top:16px">
+      <h3 class="section-title" style="margin:0;font-size:1rem">Aufgaben</h3>
+      <button class="action small" id="addTaskBtn">+ Aufgabe</button>
+    </div>
+    <p class="muted" style="font-size:0.76rem;margin:-6px 0 10px">Sortiert nach Dringlichkeit: überfällige und wichtige Aufgaben zuerst.</p>`;
+  if(!tasks.length){ html += `<div class="empty">Noch keine Putzaufgaben angelegt.</div>`; return html; }
+  html += sortTasksByUrgency(tasks).map(t=>{
+    const assignee = members[t.assigneeIdx] || '–';
+    const isOverdue = taskStatus(t) === 'overdue';
+    return `<div class="clean-item ${isOverdue?'overdue':''}">
+      <div class="clean-top">
+        <div>
+          <strong>${statusIcon(taskStatus(t))} ${esc(t.task)}</strong>
+          <div class="clean-meta">${esc(t.freq||'')}</div>
+          <div class="clean-meta">${formatLastRotated(t.lastRotated)}</div>
+          ${statusLabel(taskStatus(t)) ? `<div class="freshness ${taskStatus(t)}"><span class="dot"></span>${statusLabel(taskStatus(t))}</div>` : ''}
+          ${t.category ? `<div class="clean-meta">${CATEGORY_ICONS[t.category]||''} ${esc(t.category)}</div>` : ''}
+          ${t.doneBy && Object.keys(t.doneBy).length ? (()=>{
+            const ranked = Object.entries(t.doneBy).sort((a,b)=>b[1]-a[1]);
+            const top = ranked[0][1];
+            return `<div class="clean-meta">${ranked.map(([name,cnt])=>`${cnt===top&&top>0?'👑 ':''}${esc(name)} ${cnt}×`).join(' · ')}</div>`;
+          })() : ''}
+        </div>
+        <span class="assignee-pill">dran: ${esc(assignee)}</span>
+      </div>
+      ${(()=>{
+        const m = taskMastery(t);
+        const earnedBadges = TASK_BADGES.filter(b => (t.completedCount||0) >= b.at);
+        return `<div style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;font-size:0.76rem;color:var(--ink-soft)">
+            <span>⭐ Stufe ${m.level} · ${esc(m.rank)}</span>
+            <span>${m.nextAt ? (m.done + '/' + m.nextAt) : 'max'}</span>
+          </div>
+          <div class="board-bar"><div class="board-bar-fill" style="width:${m.progress}%"></div></div>
+          ${earnedBadges.length ? `<div class="badge-row" style="margin-top:6px">${earnedBadges.map(b=>`<span class="badge-chip earned">${b.icon} ${b.label}</span>`).join('')}</div>` : ''}
+        </div>`;
+      })()}
+      ${(t.subtasks && t.subtasks.length) ? (()=>{
+        const doneCount = t.subtasks.filter(s=>s.done).length;
+        return `<div style="margin-top:8px">
+          <div class="muted" style="font-size:0.76rem">Teilaufgaben ${doneCount}/${t.subtasks.length}</div>
+          <div class="subtask-row">${t.subtasks.map(s=>`
+            <button class="subtask-chip ${s.done?'done':''}" data-subtask="${t.id}" data-subid="${s.id}">${s.done?'✓':'○'} ${esc(s.name)}${s.done && s.doneBy ? ' · '+esc(s.doneBy) : ''}</button>
+          `).join('')}</div>
+        </div>`;
+      })() : ''}
+      <div class="muted" style="font-size:0.76rem;margin-top:8px">Wer hat's gemacht? <span style="opacity:.75">(+${taskXpValue(t)} Punkte)</span></div>
+      <div class="row" style="margin-top:4px;gap:6px;flex-wrap:wrap">
+        ${members.map((m,i)=>`<button class="action ghost small" data-doneby="${t.id}" data-idx="${i}">✓ ${esc(m)}</button>`).join('')}
+        <button class="action ghost small" data-nudgeopen="${t.id}">💬</button>
+        <button class="action ghost small" data-edittask="${t.id}">Bearb.</button>
+        <select data-setprio="${t.id}" style="width:auto;flex:none;font-size:0.78rem;padding:5px 8px">${Object.entries(PRIORITIES).map(([k,v])=>`<option value="${k}" ${taskPriority(t)===k?'selected':''}>${v.icon} ${v.label}</option>`).join('')}</select>
+        <button class="action ghost small" data-deltask="${t.id}">Löschen</button>
+      </div>
+    </div>`;
+  }).join('');
+  return html;
+}
+
+/* ---------- HELPERS ---------- */
+function esc(s){ return (s||'').toString().replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+function bindEvents(){
+  // Recipes
+  const addBtn = document.getElementById('addRecipeBtn');
+  if(addBtn) addBtn.onclick = ()=> openRecipeModal(null);
+  const searchInput = document.getElementById('recipeSearch');
+  if(searchInput) searchInput.oninput = (e)=>{
+    recipeSearch = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const ni = document.getElementById('recipeSearch');
+    if(ni){ ni.focus(); ni.setSelectionRange(pos,pos); }
+  };
+  const catSelect = document.getElementById('categoryFilter');
+  if(catSelect) catSelect.onchange = ()=>{ categoryFilter = catSelect.value; render(); };
+  document.querySelectorAll('[data-toshop]').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      e.stopPropagation();
+      const r = state.recipes.find(x=>x.id===btn.dataset.toshop);
+      if(!r || !r.ingredients) return;
+      const base = r.servings || 4;
+      const current = servingOverrides[r.id] || base;
+      const factor = current / base;
+      let added = 0;
+      r.ingredients.split('\n').map(s=>s.trim()).filter(Boolean).forEach(line=>{
+        if(/:\s*$/.test(line) && !/^[\d.,]/.test(line)) return;
+        const parsed = parseIngredientLine(line);
+        let outLine = line;
+        if(parsed && !parsed.header && parsed.amount != null){
+          outLine = formatScaled(parsed.amount * factor) + ' ' + parsed.rest;
+        }
+        const before = state.shop.length;
+        addOrMergeShopItem(outLine);
+        if(state.shop.length > before) added++;
+      });
+      await saveKey(KEYS.shop, state.shop);
+      showToast(added ? `${added} Zutat(en) hinzugefügt (${current} Portionen)` : 'Alles schon auf der Liste');
+    };
+  });
+  document.querySelectorAll('[data-pdf]').forEach(elm=>{
+    elm.onclick = (e)=>{ e.stopPropagation(); exportRecipesPdf(elm.dataset.pdf); };
+  });
+  const importBtn = document.getElementById('importBtn');
+  if(importBtn) importBtn.onclick = ()=> openImportModal();
+  const linkImportBtn = document.getElementById('linkImportBtn');
+  if(linkImportBtn) linkImportBtn.onclick = ()=> openLinkImportModal();
+  document.querySelectorAll('[data-open]').forEach(elm=>{
+    elm.onclick = ()=>{ const id=elm.dataset.open; openRecipeId = openRecipeId===id?null:id; render(); };
+  });
+  document.querySelectorAll('[data-edit]').forEach(elm=>{
+    elm.onclick = (e)=>{ e.stopPropagation(); openRecipeModal(state.recipes.find(r=>r.id===elm.dataset.edit)); };
+  });
+  document.querySelectorAll('[data-del]').forEach(elm=>{
+    elm.onclick = async (e)=>{ e.stopPropagation();
+      state.recipes = state.recipes.filter(r=>r.id!==elm.dataset.del);
+      await saveKey(KEYS.recipes, state.recipes); render(); };
+  });
+  document.querySelectorAll('[data-servminus]').forEach(elm=>{
+    elm.onclick = (e)=>{ e.stopPropagation();
+      const r = state.recipes.find(x=>x.id===elm.dataset.servminus);
+      const base = r.servings || 4;
+      const cur = servingOverrides[r.id] || base;
+      servingOverrides[r.id] = Math.max(1, cur-1); render(); };
+  });
+  document.querySelectorAll('[data-servplus]').forEach(elm=>{
+    elm.onclick = (e)=>{ e.stopPropagation();
+      const r = state.recipes.find(x=>x.id===elm.dataset.servplus);
+      const base = r.servings || 4;
+      const cur = servingOverrides[r.id] || base;
+      servingOverrides[r.id] = cur+1; render(); };
+  });
+
+  // Week
+  const weekModeCurrent = document.getElementById('weekModeCurrent');
+  if(weekModeCurrent) weekModeCurrent.onclick = ()=>{ weekViewMode='current'; render(); };
+  const weekModeNext = document.getElementById('weekModeNext');
+  if(weekModeNext) weekModeNext.onclick = ()=>{ weekViewMode='next'; render(); };
+  document.querySelectorAll('.weekSelect').forEach(sel=>{
+    sel.onchange = async ()=>{
+      const day = sel.dataset.day;
+      const meal = sel.dataset.meal;
+      const key = weekViewMode==='current' ? KEYS.week : KEYS.weekNext;
+      const data = weekViewMode==='current' ? state.week : state.weekNext;
+      data[day] = data[day] || {};
+      data[day][meal] = data[day][meal] || {};
+      if(data[day][meal].recipeId !== (sel.value || null)) data[day][meal].cooked = false;
+      data[day][meal].recipeId = sel.value || null;
+      await saveKey(key, data); render();
+    };
+  });
+  document.querySelectorAll('.weekNote').forEach(inp=>{
+    inp.onchange = async ()=>{
+      const day = inp.dataset.day;
+      const meal = inp.dataset.meal;
+      const key = weekViewMode==='current' ? KEYS.week : KEYS.weekNext;
+      const data = weekViewMode==='current' ? state.week : state.weekNext;
+      data[day] = data[day] || {};
+      data[day][meal] = data[day][meal] || {};
+      data[day][meal].note = inp.value;
+      await saveKey(key, data);
+    };
+  });
+  document.querySelectorAll('[data-gorecipe]').forEach(btn=>{
+    btn.onclick = ()=>{
+      openRecipeId = btn.dataset.gorecipe;
+      setTab('recipes');
+      setTimeout(()=>{
+        const el = document.querySelector(`[data-open="${openRecipeId}"]`);
+        if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+      }, 60);
+    };
+  });
+  document.querySelectorAll('[data-togglecooked]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const day = btn.dataset.togglecooked;
+      const meal = btn.dataset.meal;
+      const key = weekViewMode==='current' ? KEYS.week : KEYS.weekNext;
+      const data = weekViewMode==='current' ? state.week : state.weekNext;
+      if(data[day] && data[day][meal]){
+        data[day][meal].cooked = !data[day][meal].cooked;
+        await saveKey(key, data); render();
+      }
+    };
+  });
+  const clearWeekBtn = document.getElementById('clearWeekBtn');
+  if(clearWeekBtn) clearWeekBtn.onclick = async ()=>{
+    const key = weekViewMode==='current' ? KEYS.week : KEYS.weekNext;
+    if(weekViewMode==='current') state.week = {}; else state.weekNext = {};
+    await saveKey(key, weekViewMode==='current' ? state.week : state.weekNext); render();
+  };
+
+  // Shop
+  const addItemBtn = document.getElementById('addItemBtn');
+  if(addItemBtn) addItemBtn.onclick = async ()=>{
+    const inp = document.getElementById('newItem');
+    if(inp.value.trim()){
+      addOrMergeShopItem(inp.value.trim());
+      await saveKey(KEYS.shop, state.shop); render();
+    }
+  };
+  const newItemInp = document.getElementById('newItem');
+  if(newItemInp) newItemInp.onkeydown = (e)=>{ if(e.key==='Enter') addItemBtn.click(); };
+  const consolidateBtn = document.getElementById('consolidateBtn');
+  if(consolidateBtn) consolidateBtn.onclick = async ()=>{
+    consolidateShopList();
+    await saveKey(KEYS.shop, state.shop); render();
+  };
+  const shareShopBtn = document.getElementById('shareShopBtn');
+  if(shareShopBtn) shareShopBtn.onclick = ()=> openShopShareModal();
+  document.querySelectorAll('[data-toggle]').forEach(cb=>{
+    cb.onchange = async ()=>{
+      const it = state.shop.find(i=>i.id===cb.dataset.toggle);
+      it.checked = cb.checked;
+      await saveKey(KEYS.shop, state.shop); render();
+    };
+  });
+  document.querySelectorAll('[data-remove]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      state.shop = state.shop.filter(i=>i.id!==btn.dataset.remove);
+      await saveKey(KEYS.shop, state.shop); render();
+    };
+  });
+  const clearBtn = document.getElementById('clearChecked');
+  if(clearBtn) clearBtn.onclick = async ()=>{
+    state.shop = state.shop.filter(i=>!i.checked);
+    await saveKey(KEYS.shop, state.shop); render();
+  };
+
+  // Cleaning
+  const moodFace = document.getElementById('moodFace');
+  if(moodFace) moodFace.onclick = ()=>{
+    const m = houseMood();
+    showToast('Das Haus ' + randomPhrase(tierFor(m.percent)));
+  };
+  document.querySelectorAll('[data-needcat]').forEach(row=>{
+    row.onclick = ()=>{
+      const cat = row.dataset.needcat;
+      const cm = houseMoodByCategory().find(c=>c.cat===cat);
+      if(cm) showToast(cat + ' ' + randomPhrase(tierFor(cm.percent)));
+    };
+  });
+  const addMemberBtn = document.getElementById('addMemberBtn');
+  if(addMemberBtn) addMemberBtn.onclick = async ()=>{
+    const inp = document.getElementById('newMember');
+    if(inp.value.trim()){
+      state.clean.members = state.clean.members || [];
+      state.clean.members.push(inp.value.trim());
+      await saveKey(KEYS.clean, state.clean); render();
+    }
+  };
+  document.querySelectorAll('[data-rmMember]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const idx = parseInt(btn.dataset.rmmember);
+      const name = state.clean.members[idx];
+      state.clean.members.splice(idx,1);
+      state.clean.tasks.forEach(t=>{
+        if(t.assigneeIdx>=state.clean.members.length) t.assigneeIdx=0;
+        if(t.doneBy && name in t.doneBy) delete t.doneBy[name];
+        if(t.firstDoneBy===name){ t.firstDoneBy=null; t.firstDoneAt=null; }
+      });
+      if(state.clean.points) delete state.clean.points[name];
+      if(state.clean.skills) delete state.clean.skills[name];
+      await saveKey(KEYS.clean, state.clean); render();
+    };
+  });
+  const addTaskBtn = document.getElementById('addTaskBtn');
+  if(addTaskBtn) addTaskBtn.onclick = ()=> openTaskModal();
+  document.querySelectorAll('[data-doneby]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const t = state.clean.tasks.find(x=>x.id===btn.dataset.doneby);
+      const doerIdx = parseInt(btn.dataset.idx);
+      const n = state.clean.members.length;
+      const doer = state.clean.members[doerIdx];
+      let pointsMsg = null;
+      let didLevelUp = false;
+      let extraMsg = null;
+      let questMsg = null;
+      const moodBeforeAction = houseMood().percent;
+      const overdueDaysBefore = (()=>{
+        if(!t.lastRotated) return 0;
+        const days = Math.floor((Date.now() - new Date(t.lastRotated).getTime()) / 86400000);
+        return Math.max(0, days);
+      })();
+      if(doer){
+        const wasOnTime = taskStatus(t) !== 'overdue';
+        const baseXp = taskXpValue(t);
+        let gained = wasOnTime ? baseXp : Math.round(baseXp * 0.65);
+        const critical = Math.random() < 0.15;
+        if(critical) gained *= 2;
+        if(critical) state.clean.criticalCount = (state.clean.criticalCount||0) + 1;
+        const todayKey = isoDate(new Date());
+        state.clean.dayLog = (state.clean.dayLog && state.clean.dayLog.date === todayKey)
+          ? {date:todayKey, count: state.clean.dayLog.count + 1}
+          : {date:todayKey, count:1};
+
+        const quest = dailyQuestTask();
+        const isQuest = quest && quest.id === t.id && !questDoneToday();
+        if(isQuest){
+          gained *= 2;
+          state.clean.questDone = isoDate(new Date());
+        }
+
+        const masteryBefore = taskMastery(t).level;
+
+        state.clean.points = state.clean.points || {};
+        const before = state.clean.points[doer] || 0;
+        state.clean.points[doer] = before + gained;
+        const after = state.clean.points[doer];
+        if(levelFor(after).level > levelFor(before).level) didLevelUp = true;
+
+        const cat = t.category || 'Sonstiges';
+        state.clean.skills = state.clean.skills || {};
+        state.clean.skills[doer] = state.clean.skills[doer] || {};
+        state.clean.skills[doer][cat] = (state.clean.skills[doer][cat]||0) + 10;
+
+        t.completedCount = (t.completedCount||0) + 1;
+        t.doneBy = t.doneBy || {};
+        t.doneBy[doer] = (t.doneBy[doer]||0) + 1;
+        if(!t.firstDoneBy){
+          t.firstDoneBy = doer;
+          t.firstDoneAt = new Date().toISOString();
+        }
+
+        const masteryAfter = taskMastery(t);
+        if(masteryAfter.level > masteryBefore){
+          extraMsg = '⭐ „' + t.task + '" ist jetzt: ' + masteryAfter.rank;
+        }
+        const newBadge = TASK_BADGES.find(b => b.at === t.completedCount);
+        if(newBadge){
+          extraMsg = newBadge.icon + ' Abzeichen für „' + t.task + '": ' + newBadge.label + ' erledigt!';
+        }
+
+        // Team streak: consecutive calendar days with at least one completion
+        const today = isoDate(new Date());
+        state.clean.streak = state.clean.streak || {count:0, lastDate:null};
+        if(state.clean.streak.lastDate !== today){
+          const yesterday = isoDate(addDays(new Date(), -1));
+          state.clean.streak.count = (state.clean.streak.lastDate === yesterday) ? state.clean.streak.count + 1 : 1;
+          state.clean.streak.lastDate = today;
+        }
+
+        pointsMsg = critical
+          ? '💥 Kritischer Erfolg! ' + doer + ' +' + gained + ' Punkte, +10 ' + cat + '-Skill'
+          : doer + ' +' + gained + ' Punkte, +10 ' + cat + '-Skill';
+        if(isQuest) questMsg = '🎯 Tagesquest erfüllt – doppelte Punkte!';
+      }
+      if(n>0) t.assigneeIdx = (doerIdx+1) % n;
+      t.lastRotated = new Date().toISOString();
+
+      const freqDays = parseFreqDays(t.freq) || 7;
+      const lastDone = t.lastRotated ? new Date(t.lastRotated) : null;
+      const secrets = await checkSecretBadges(buildSecretContext({
+        category: t.category,
+        expectedDays: freqDays,
+        overdueDays: overdueDaysBefore,
+        helpers: 1,
+        moodBefore: moodBeforeAction
+      }));
+
+      await saveKey(KEYS.clean, state.clean); render();
+
+      const queue = [];
+      if(questMsg) queue.push(questMsg);
+      if(didLevelUp) queue.push('🎉 Level-Aufstieg für ' + doer + '!');
+      if(extraMsg) queue.push(extraMsg);
+      if(pointsMsg) queue.push(pointsMsg);
+      secrets.forEach(b=> queue.push(`${b.icon} Geheimes Abzeichen: „${b.name}" – ${b.hint}`));
+      if(didLevelUp || extraMsg || questMsg || secrets.length) triggerConfetti();
+      queue.forEach((msg, i)=> setTimeout(()=> showToast(msg), 300 + i*1900));
+    };
+  });
+  document.querySelectorAll('[data-subtask]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const t = state.clean.tasks.find(x=>x.id===btn.dataset.subtask);
+      if(!t || !t.subtasks) return;
+      const sub = t.subtasks.find(s=>s.id===btn.dataset.subid);
+      if(!sub) return;
+      if(sub.done){ applySubtask(t, sub, null); return; }
+      const members = state.clean.members || [];
+      if(members.length <= 1){ applySubtask(t, sub, members[0] || null); return; }
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `<div class="modal-bg" id="subWhoBg"><div class="modal">
+        <h3>„${esc(sub.name)}" erledigt</h3>
+        <p class="muted" style="margin-top:-6px">Wer hat das gemacht?</p>
+        <div class="field">${members.map((m,i)=>`<button class="action" style="width:100%;margin-bottom:8px" data-subwho="${i}">✓ ${esc(m)}</button>`).join('')}</div>
+        <div class="modal-actions"><button class="action ghost" id="subWhoCancel">Abbrechen</button></div>
+      </div></div>`;
+      document.body.appendChild(wrap.firstChild);
+      document.getElementById('subWhoCancel').onclick = ()=> document.getElementById('subWhoBg').remove();
+      document.querySelectorAll('[data-subwho]').forEach(b=>{
+        b.onclick = ()=>{
+          const who = members[parseInt(b.dataset.subwho)];
+          document.getElementById('subWhoBg').remove();
+          applySubtask(t, sub, who);
+        };
+      });
+    };
+  });
+  document.querySelectorAll('[data-edittask]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const t = state.clean.tasks.find(x=>x.id===btn.dataset.edittask);
+      if(t) openTaskModal(t);
+    };
+  });
+  document.querySelectorAll('[data-setprio]').forEach(sel=>{
+    sel.onchange = async ()=>{
+      const t = state.clean.tasks.find(x=>x.id===sel.dataset.setprio);
+      if(t){ t.priority = sel.value; await saveKey(KEYS.clean, state.clean); render(); }
+    };
+  });
+  document.querySelectorAll('[data-nudgeopen]').forEach(btn=>{
+    btn.onclick = ()=> openNudgeModal(btn.dataset.nudgeopen);
+  });
+  document.querySelectorAll('[data-deltask]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      state.clean.tasks = state.clean.tasks.filter(t=>t.id!==btn.dataset.deltask);
+      await saveKey(KEYS.clean, state.clean); render();
+    };
+  });
+}
+
+function taskModal(existing){
+  const e = existing || null;
+  const members = state.clean.members || [];
+  const options = members.map((m,i)=>`<option value="${i}" ${e && e.assigneeIdx===i?'selected':''}>${esc(m)}</option>`).join('');
+  const catOptions = Object.keys(CATEGORY_ICONS).map(c=>`<option value="${escAttr(c)}" ${e && e.category===c?'selected':''}>${CATEGORY_ICONS[c]} ${esc(c)}</option>`).join('');
+  const subText = e && e.subtasks ? e.subtasks.map(s=>s.name).join('\n') : '';
+  return `<div class="modal-bg" id="taskBg"><div class="modal">
+    <h3>${e ? 'Aufgabe bearbeiten' : 'Neue Putzaufgabe'}</h3>
+    <div class="field"><label>Aufgabe</label><input id="t_task" placeholder="z. B. Bad putzen" value="${e?escAttr(e.task):''}"></div>
+    <div class="row">
+      <div class="field"><label>Rhythmus</label><select id="t_freq">${FREQ_OPTIONS.map(o=>`<option value="${escAttr(o.value)}" ${(e ? e.freq===o.value : o.value==='Wöchentlich')?'selected':''}>${esc(o.value)}</option>`).join('')}</select></div>
+      <div class="field"><label>Bereich</label><select id="t_category">${catOptions}</select></div>
+    </div>
+    <div class="field"><label>Zuständig</label><select id="t_assignee">${options || '<option value="0">– niemand angelegt –</option>'}</select></div>
+    <div class="field"><label>Priorität</label><select id="t_priority">${Object.entries(PRIORITIES).map(([k,v])=>`<option value="${k}" ${(e ? taskPriority(e)===k : k==='mittel')?'selected':''}>${v.icon} ${v.label}</option>`).join('')}</select></div>
+    <div class="field"><label>Teilaufgaben (optional, eine pro Zeile)</label><textarea id="t_subtasks" style="min-height:70px" placeholder="Klo&#10;Dusche&#10;Waschbecken">${esc(subText)}</textarea></div>
+    <div class="modal-actions">
+      <button class="action ghost" id="taskCancel">Abbrechen</button>
+      <button class="action" id="taskSave" data-editid="${e?e.id:''}">Speichern</button>
+    </div>
+  </div></div>`;
+}
+function openTaskModal(existing){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = taskModal(existing);
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('taskCancel').onclick = ()=> document.getElementById('taskBg').remove();
+  document.getElementById('taskSave').onclick = async ()=>{
+    const task = document.getElementById('t_task').value.trim();
+    if(!task){ document.getElementById('t_task').focus(); return; }
+    const freq = document.getElementById('t_freq').value.trim();
+    const category = document.getElementById('t_category').value;
+    const assigneeIdx = parseInt(document.getElementById('t_assignee').value) || 0;
+    const priority = document.getElementById('t_priority').value;
+    const names = document.getElementById('t_subtasks').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const editId = document.getElementById('taskSave').dataset.editid;
+
+    state.clean.tasks = state.clean.tasks || [];
+    if(editId){
+      const t = state.clean.tasks.find(x=>x.id===editId);
+      if(t){
+        const prevSubs = t.subtasks || [];
+        t.task = task; t.freq = freq; t.category = category;
+        t.priority = priority; t.assigneeIdx = assigneeIdx;
+        t.subtasks = names.map(name=>{
+          const old = prevSubs.find(p=>p.name===name);
+          return old || {id:uid(), name, done:false};
+        });
+      }
+    } else {
+      const subs = names.map(name=>({id:uid(), name, done:false}));
+      state.clean.tasks.push({id:uid(), task, freq, category, priority, subtasks:subs, assigneeIdx, lastRotated:null, completedCount:0, firstDoneBy:null, firstDoneAt:null});
+    }
+    await saveKey(KEYS.clean, state.clean);
+    document.getElementById('taskBg').remove();
+    render();
+  };
+}
+
+function openRecipeModal(existing){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = recipeModal(existing);
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('modalCancel').onclick = ()=> document.getElementById('modalBg').remove();
+  document.getElementById('modalSave').onclick = async ()=>{
+    const id = document.getElementById('modalSave').dataset.id;
+    const titleVal = document.getElementById('f_title').value.trim() || 'Ohne Titel';
+    const ingVal = document.getElementById('f_ing').value;
+    const catVal = document.getElementById('f_cat').value.trim();
+    const data = {
+      id: id || uid(),
+      title: titleVal,
+      category: catVal || guessCategory(titleVal, ingVal),
+      servings: parseInt(document.getElementById('f_servings').value) || 4,
+      prepTime: document.getElementById('f_prep').value.trim(),
+      cookTime: document.getElementById('f_cook').value.trim(),
+      calories: parseInt(document.getElementById('f_cal').value) || 0,
+      protein: parseInt(document.getElementById('f_protein').value) || 0,
+      link: document.getElementById('f_link').value.trim(),
+      ingredients: ingVal,
+      steps: document.getElementById('f_steps').value
+    };
+    if(id){ state.recipes = state.recipes.map(r=>r.id===id?data:r); }
+    else{ state.recipes.push(data); }
+    await saveKey(KEYS.recipes, state.recipes);
+    document.getElementById('modalBg').remove();
+    render();
+  };
+}
+
+async function exportAllData(){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/storage?select=key,value`, {
+    headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` }
+  });
+  if(!res.ok) throw new Error('Export fehlgeschlagen');
+  return await res.json();
+}
+async function restoreAllData(rows){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/storage`, {
+    method:'POST',
+    headers:{
+      apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type':'application/json', 'Prefer':'resolution=merge-duplicates,return=minimal'
+    },
+    body: JSON.stringify(rows)
+  });
+  if(!res.ok) throw new Error('Import fehlgeschlagen');
+}
+function backupModal(){
+  return `<div class="modal-bg" id="backupBg"><div class="modal">
+    <h3>Datensicherung</h3>
+    <p class="muted" style="margin-top:-6px">Zusätzliche Sicherheit neben Supabase: kompletten Datenstand (alle Rezepte, alle Wochen, Einkauf, Putzplan) als Text sichern oder wiederherstellen.</p>
+    <div class="field"><label>Export (kopieren oder als Datei speichern)</label>
+      <textarea id="backupExport" style="min-height:140px;font-family:monospace;font-size:0.78rem" readonly>Lädt …</textarea>
+    </div>
+    <div class="row" style="margin-bottom:16px">
+      <button class="action ghost small" id="backupCopy" style="flex:none">Text kopieren</button>
+      <a id="backupDownload" class="action ghost small" style="flex:none;text-decoration:none;text-align:center">Als Datei speichern</a>
+    </div>
+    <div class="field"><label>Import (hier einfügen zum Wiederherstellen)</label>
+      <textarea id="backupImport" style="min-height:100px;font-family:monospace;font-size:0.78rem" placeholder="Backup-Text hier einfügen …"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="action ghost" id="backupCancel">Schließen</button>
+      <button class="action" id="backupRestore">Wiederherstellen</button>
+    </div>
+    <p id="backupStatus" class="muted" style="margin-top:10px"></p>
+  </div></div>`;
+}
+async function openBackupModal(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = backupModal();
+  document.body.appendChild(wrap.firstChild);
+  document.getElementById('backupCancel').onclick = ()=> document.getElementById('backupBg').remove();
+  const exportArea = document.getElementById('backupExport');
+  try{
+    const rows = await exportAllData();
+    exportArea.value = JSON.stringify(rows, null, 2);
+  }catch(e){
+    exportArea.value = '';
+    exportArea.placeholder = 'Konnte nicht laden – bitte Verbindung prüfen.';
+  }
+  document.getElementById('backupCopy').onclick = async ()=>{
+    exportArea.select();
+    try{ await navigator.clipboard.writeText(exportArea.value); showToast('In Zwischenablage kopiert ✓'); }
+    catch(e){ showToast('Bitte Text manuell markieren & kopieren', true); }
+  };
+  const blob = new Blob([exportArea.value], {type:'application/json'});
+  const dlLink = document.getElementById('backupDownload');
+  dlLink.href = URL.createObjectURL(blob);
+  dlLink.download = 'vorratskammer-backup.json';
+  document.getElementById('backupRestore').onclick = async ()=>{
+    const status = document.getElementById('backupStatus');
+    try{
+      const rows = JSON.parse(document.getElementById('backupImport').value);
+      if(!Array.isArray(rows)) throw new Error('falsches Format');
+      await restoreAllData(rows);
+      status.textContent = 'Wiederhergestellt ✓ – Seite lädt neu …';
+      setTimeout(()=> location.reload(), 1200);
+    }catch(e){
+      status.textContent = 'Konnte den Text nicht lesen. Bitte kompletten Backup-Text einfügen.';
+    }
+  };
+}
+
+loadAll();
+</script>
+</body>
+</html>
