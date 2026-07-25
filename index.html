@@ -221,6 +221,54 @@
   .modal h3{font-family:'Fraunces',serif;margin:0 0 14px;color:var(--recipes);}
   .modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
   .empty{text-align:center;padding:36px 10px;color:var(--ink-soft);font-size:0.9rem;}
+  button.action:disabled, a.action:disabled{opacity:.35;cursor:not-allowed;}
+
+  /* Kochmodus */
+  .cook-bg{
+    background:var(--ink);
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:24px 16px 30px;
+    overflow-y:auto;
+    z-index:20;
+  }
+  .cook-top{
+    width:100%;max-width:480px;
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;flex:none;
+  }
+  .cook-close{
+    background:none;border:1.5px solid rgba(255,249,240,.4);color:#FFF9F0;
+    border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;flex:none;
+    line-height:1;
+  }
+  .cook-dots{display:flex;gap:6px;flex-wrap:wrap;max-width:220px;justify-content:center;}
+  .cook-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,249,240,.3);flex:none;}
+  .cook-dot.active{background:var(--recipes);width:18px;border-radius:4px;transition:all .25s ease;}
+  .cook-card{
+    width:100%;max-width:480px;background:var(--card);border-radius:20px;
+    padding:26px 22px;min-height:260px;display:flex;flex-direction:column;
+    box-shadow:0 20px 40px rgba(0,0,0,.35);
+  }
+  .cook-step-badge{
+    width:48px;height:48px;border-radius:50%;border:2.5px solid var(--recipes);
+    color:var(--recipes);font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;
+    display:flex;align-items:center;justify-content:center;margin-bottom:14px;flex:none;
+  }
+  .cook-step-title{font-family:'Fraunces',serif;font-weight:600;font-size:1.3rem;margin:0 0 12px;color:var(--ink);}
+  .cook-step-text{font-size:1.02rem;line-height:1.55;color:var(--ink);flex-grow:1;}
+  .cook-ing-group{font-weight:700;color:var(--recipes);margin:10px 0 4px;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+  .cook-ing-group:first-child{margin-top:0;}
+  .cook-ing-list{list-style:none;margin:0;padding:0;}
+  .cook-ing-list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.95rem;}
+  .cook-ing-list li:last-child{border-bottom:none;}
+  .cook-ing-list li.checked span{text-decoration:line-through;color:var(--ink-soft);}
+  .cook-ing-list li input{margin-top:3px;width:16px;height:16px;accent-color:var(--week);flex:none;}
+  .cook-timer-box{margin-top:16px;padding:14px;border:1.5px dashed var(--recipes);border-radius:12px;text-align:center;}
+  .cook-timer-display{font-family:'Inter',sans-serif;font-size:2rem;font-weight:700;color:var(--ink);margin-bottom:8px;}
+  .cook-nav{width:100%;max-width:480px;display:flex;gap:10px;margin-top:18px;flex:none;}
+  .cook-nav .action{flex:1;}
   .loading{text-align:center;padding:36px 10px;color:var(--ink-soft);font-size:0.85rem;}
   .member-chip{
     display:inline-flex;align-items:center;gap:6px;background:var(--clean-soft);
@@ -496,10 +544,163 @@ function domainFromLink(url){
   try{ return new URL(url).hostname.replace(/^www\./,''); }
   catch(e){ return url; }
 }
+function getRecipeSteps(recipe){
+  return (recipe.steps||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/^\d+[\.\)]\s*/,''));
+}
 function renderStepsHtml(recipe){
-  const steps = (recipe.steps||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/^\d+[\.\)]\s*/,''));
+  const steps = getRecipeSteps(recipe);
   if(!steps.length) return '<p class="muted">–</p>';
   return '<ol style="padding-left:20px;margin:4px 0">' + steps.map(s=>`<li style="margin-bottom:6px">${esc(s)}</li>`).join('') + '</ol>';
+}
+function extractTimerSeconds(text){
+  const m = (text||'').match(/(\d+)\s*(Minuten|Minute|Min\.?|Stunden|Stunde|Std\.?)\b/i);
+  if(!m) return null;
+  const num = parseInt(m[1],10);
+  return /Stunden|Stunde|Std/i.test(m[2]) ? num*3600 : num*60;
+}
+function formatCookTime(sec){
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+/* ---------- Kochmodus ---------- */
+let cookState = { recipeId:null, step:0 };
+let cookChecked = {};
+let cookTimer = { interval:null, remaining:0, running:false };
+
+function cookOverlayHtml(){
+  const r = state.recipes.find(x=>x.id===cookState.recipeId);
+  if(!r) return '';
+  const base = r.servings || 4;
+  const factor = (servingOverrides[r.id] || base) / base;
+  const steps = getRecipeSteps(r);
+  const total = steps.length + 1;
+  const idx = cookState.step;
+
+  let bodyHtml;
+  if(idx === 0){
+    const lines = (r.ingredients||'').split('\n').map(l=>parseIngredientLine(l)).filter(Boolean);
+    let listHtml = '';
+    let inList = false;
+    lines.forEach((l,i)=>{
+      if(l.header){
+        if(inList){ listHtml += '</ul>'; inList=false; }
+        listHtml += `<div class="cook-ing-group">${esc(l.text)}</div>`;
+      } else {
+        if(!inList){ listHtml += '<ul class="cook-ing-list">'; inList=true; }
+        const amountStr = l.amount!=null ? formatScaled(l.amount*factor)+' ' : '';
+        listHtml += `<li class="${cookChecked[i]?'checked':''}"><input type="checkbox" data-cookcheck="${i}" ${cookChecked[i]?'checked':''}><span>${esc(amountStr)}${esc(l.rest)}</span></li>`;
+      }
+    });
+    if(inList) listHtml += '</ul>';
+    bodyHtml = `
+      <div class="cook-step-badge">🧺</div>
+      <h2 class="cook-step-title">Zutaten</h2>
+      <div class="cook-step-text">${listHtml || '<p class="muted">Keine Zutaten hinterlegt.</p>'}</div>`;
+  } else {
+    const stepText = steps[idx-1];
+    const timerSec = extractTimerSeconds(stepText);
+    const timerHtml = timerSec ? `<div class="cook-timer-box">
+        <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(timerSec)}</div>
+        <button class="action" id="cookTimerBtn">Timer starten</button>
+      </div>` : '';
+    bodyHtml = `
+      <div class="cook-step-badge">${idx}/${steps.length}</div>
+      <h2 class="cook-step-title">Schritt ${idx}</h2>
+      <div class="cook-step-text">${esc(stepText)}</div>
+      ${timerHtml}`;
+  }
+
+  const dots = Array.from({length: total}).map((_,i)=>`<div class="cook-dot ${i===idx?'active':''}"></div>`).join('');
+
+  return `<div class="modal-bg cook-bg" id="cookBg">
+    <div class="cook-top">
+      <button class="cook-close" id="cookClose">×</button>
+      <div class="cook-dots">${dots}</div>
+      <div style="width:32px"></div>
+    </div>
+    <div class="cook-card">${bodyHtml}</div>
+    <div class="cook-nav">
+      <button class="action ghost" id="cookPrev" ${idx===0?'disabled':''}>Zurück</button>
+      <button class="action" id="cookNext">${idx===total-1?'Fertig':'Weiter'}</button>
+    </div>
+  </div>`;
+}
+function openCookMode(recipeId){
+  cookState = { recipeId, step:0 };
+  cookChecked = {};
+  clearInterval(cookTimer.interval);
+  cookTimer = { interval:null, remaining:0, running:false };
+  const wrap = document.createElement('div');
+  wrap.innerHTML = cookOverlayHtml();
+  document.body.appendChild(wrap.firstChild);
+  bindCookEvents();
+}
+function closeCookMode(){
+  clearInterval(cookTimer.interval);
+  const el = document.getElementById('cookBg');
+  if(el) el.remove();
+}
+function renderCookMode(){
+  clearInterval(cookTimer.interval);
+  cookTimer = { interval:null, remaining:0, running:false };
+  const el = document.getElementById('cookBg');
+  if(!el) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = cookOverlayHtml();
+  el.replaceWith(wrap.firstChild);
+  bindCookEvents();
+}
+function bindCookEvents(){
+  const closeBtn = document.getElementById('cookClose');
+  if(closeBtn) closeBtn.onclick = closeCookMode;
+  const prevBtn = document.getElementById('cookPrev');
+  if(prevBtn) prevBtn.onclick = ()=>{ if(cookState.step>0){ cookState.step--; renderCookMode(); } };
+  const nextBtn = document.getElementById('cookNext');
+  if(nextBtn) nextBtn.onclick = ()=>{
+    const r = state.recipes.find(x=>x.id===cookState.recipeId);
+    const total = getRecipeSteps(r).length + 1;
+    if(cookState.step >= total-1){ closeCookMode(); return; }
+    cookState.step++; renderCookMode();
+  };
+  const timerBtn = document.getElementById('cookTimerBtn');
+  if(timerBtn){
+    const r = state.recipes.find(x=>x.id===cookState.recipeId);
+    const steps = getRecipeSteps(r);
+    const sec = extractTimerSeconds(steps[cookState.step-1]);
+    timerBtn.onclick = ()=> toggleCookTimer(sec);
+  }
+  document.querySelectorAll('#cookBg [data-cookcheck]').forEach(cb=>{
+    cb.onchange = ()=>{
+      const i = cb.dataset.cookcheck;
+      cookChecked[i] = cb.checked;
+      cb.closest('li').classList.toggle('checked', cb.checked);
+    };
+  });
+}
+function toggleCookTimer(totalSeconds){
+  const btn = document.getElementById('cookTimerBtn');
+  const display = document.getElementById('cookTimerDisplay');
+  if(!cookTimer.running){
+    if(!cookTimer.remaining) cookTimer.remaining = totalSeconds;
+    cookTimer.running = true;
+    btn.textContent = 'Pause';
+    cookTimer.interval = setInterval(()=>{
+      cookTimer.remaining--;
+      if(display) display.textContent = formatCookTime(Math.max(cookTimer.remaining,0));
+      if(cookTimer.remaining <= 0){
+        clearInterval(cookTimer.interval);
+        cookTimer.running = false;
+        btn.textContent = 'Fertig ✓';
+        showToast('Timer abgelaufen ⏰');
+      }
+    }, 1000);
+  } else {
+    cookTimer.running = false;
+    clearInterval(cookTimer.interval);
+    btn.textContent = 'Weiter';
+  }
 }
 
 const UNITS = ['g','kg','ml','l','tl','el','stk','stück','prise','prisen','bund','zehe','zehen','scheibe','scheiben','dose','dosen','pkg','packung','packungen'];
@@ -763,7 +964,10 @@ function viewRecipes(){
         </div>
         <h4>Zutaten</h4>
         <div style="font-size:0.9rem;line-height:1.6">${renderIngredientsHtml(r, factor)}</div>
-        <button class="action ghost small" data-toshop="${r.id}" style="margin-top:8px">🛒 Zutaten zur Einkaufsliste</button>
+        <div class="row" style="margin-top:8px">
+          <button class="action ghost small" data-toshop="${r.id}">🛒 Zur Einkaufsliste</button>
+          <button class="action small" data-cook="${r.id}" ${getRecipeSteps(r).length?'':'disabled'}>🍳 Kochen starten</button>
+        </div>
         <h4 style="margin-top:14px">Zubereitung</h4>
         ${renderStepsHtml(r)}
       </div>
@@ -1972,6 +2176,9 @@ function bindEvents(){
   });
   document.querySelectorAll('[data-pdf]').forEach(elm=>{
     elm.onclick = (e)=>{ e.stopPropagation(); exportRecipesPdf(elm.dataset.pdf); };
+  });
+  document.querySelectorAll('[data-cook]').forEach(elm=>{
+    elm.onclick = (e)=>{ e.stopPropagation(); openCookMode(elm.dataset.cook); };
   });
   const importBtn = document.getElementById('importBtn');
   if(importBtn) importBtn.onclick = ()=> openImportModal();
