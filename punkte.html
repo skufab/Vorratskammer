@@ -241,10 +241,12 @@
 const SUPABASE_URL = 'https://wqmdjrczvirpmpcyavvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxbWRqcmN6dmlycG1wY3lhdnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2Mzg5NDgsImV4cCI6MjA5OTIxNDk0OH0.jKm3LYqLZoJfvLPKsFm2_L0x94Yfim6f96vqFYnz7K0';
 
+/* defaultPin: SHA-256 von "<id>::<code>". Der Code steht bewusst nicht im Klartext hier,
+   weil das Repo öffentlich ist. Wirklich sicher ist das trotzdem nicht – siehe Profil-Tab. */
 const PEOPLE = [
-  {id:'fabian', name:'Fabian',   recipes:true},
-  {id:'elena',  name:'Elena',    recipes:true},
-  {id:'mama',   name:'Oma Gigi', recipes:false}  // Kennung bleibt 'mama', damit alte Einträge erhalten bleiben
+  {id:'fabian', name:'Fabian',   recipes:true,  defaultPin:'695b37fc7bd3d1ea878f4731388c1a9345e8fc3e2c3507c003037007cd9641ba'},
+  {id:'elena',  name:'Elena',    recipes:true,  defaultPin:'9bfcf1fede74bcdfc551a12d912f7d21e9aad46b293a82fe12946bcad18c0936'},
+  {id:'mama',   name:'Oma Gigi', recipes:false, defaultPin:'a909965db62eebfc1435ef3cba7d3485becac0fd7db5c52fab379af1f1a6cd96'}
 ];
 const RECENT_MAX = 20;
 const MEALS = [
@@ -283,6 +285,23 @@ function visibleTemplates(){
 let activeTab = 'today';
 let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[] };
 let sheet = null;
+let unlocked = false;   // gilt nur für die laufende Sitzung und nur für die gewählte Person
+
+/* Der Code wird nie im Klartext gespeichert, sondern als Hash mit der Personenkennung
+   als Salz. Wichtig: Das ist ein Sichtschutz im Haushalt, keine echte Zugangssperre –
+   die Datenbank ist ohne Login erreichbar, wer den Link und etwas Wissen hat, kommt
+   auch ohne Code an die Werte. */
+function effectivePin(){
+  if(state.profile.pinOff) return null;                 // bewusst abgeschaltet
+  if(state.profile.pinHash) return state.profile.pinHash; // selbst gesetzter Code
+  const p = PEOPLE.find(x=> x.id===person);
+  return (p && p.defaultPin) || null;                   // Voreinstellung
+}
+async function hashCode(code){
+  const data = new TextEncoder().encode(person + '::' + code);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b=> b.toString(16).padStart(2,'0')).join('');
+}
 
 /* ---------- Datum ---------- */
 function isoDate(d){
@@ -441,6 +460,36 @@ async function addWeight(kg){
   await saveKey(weightKey(), state.weight);
   render();
 }
+async function setPin(code){
+  state.profile.pinHash = await hashCode(code);
+  state.profile.pinOff = false;
+  await saveKey(profileKey(), state.profile);
+  unlocked = true;
+  showToast('Code gespeichert ✓');
+  render();
+}
+async function removePin(){
+  state.profile.pinHash = null;
+  state.profile.pinOff = true;
+  await saveKey(profileKey(), state.profile);
+  unlocked = true;
+  showToast('Schutz aufgehoben');
+  render();
+}
+async function tryUnlock(code){
+  const msg = document.getElementById('pinMsg');
+  if(!code){ if(msg) msg.textContent = 'Bitte den Code eingeben.'; return; }
+  const h = await hashCode(code);
+  if(h === effectivePin()){
+    unlocked = true;
+    render();
+  } else {
+    if(msg){ msg.textContent = 'Code stimmt nicht.'; msg.style.color = 'var(--warn)'; }
+    const inp = document.getElementById('pinIn');
+    if(inp){ inp.value = ''; inp.focus(); }
+  }
+}
+
 async function setBudget(v){
   const n = parseInt(v);
   if(!n || n<1){ showToast('Bitte gültiges Budget eingeben', true); return; }
@@ -524,11 +573,23 @@ function viewToday(){
   return html;
 }
 
+function viewLocked(){
+  return `<h2 class="section-title">Gewicht – ${esc(personName())}</h2>
+    <p class="muted" style="margin-bottom:16px">Dieser Bereich ist mit einem Code geschützt.</p>
+    <div class="field">
+      <label>Code</label>
+      <input type="password" inputmode="numeric" id="pinIn" autocomplete="off">
+    </div>
+    <button class="action pk" id="pinGo" style="width:100%;padding:13px">Entsperren</button>
+    <p class="muted" id="pinMsg" style="margin-top:12px"></p>`;
+}
+
 function viewWeight(){
+  if(effectivePin() && !unlocked) return viewLocked();
   const list = state.weight.slice(-14);
   let html = `<h2 class="section-title">Gewicht – ${esc(personName())}</h2>`;
   html += `<div class="row" style="margin-bottom:14px">
-    <input type="number" step="0.1" id="wInput" placeholder="z. B. 81,4" style="flex:1">
+    <input type="number" step="0.1" id="wInput" placeholder="Gewicht eintragen" style="flex:1">
     <button class="action" id="wSave" style="flex:none">Eintragen</button>
   </div>`;
 
@@ -584,6 +645,22 @@ function viewProfile(){
   tpl += hasRecipes()
     ? `<p class="muted" style="margin-top:10px">Fabian und Elena teilen sich ihre Vorlagen. Oma Gigi sieht nur ihre eigenen.</p>`
     : `<p class="muted" style="margin-top:10px">Diese Mahlzeiten sind nur für dich – die anderen sehen sie nicht.</p>`;
+
+  const hasPin = !!effectivePin();
+  const isDefault = !state.profile.pinHash && !state.profile.pinOff;
+  tpl += `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Code für den Gewichtsbereich</h3>`;
+  if(hasPin){
+    tpl += `<p class="muted">Der Bereich ist geschützt.${isDefault?' Aktuell gilt der voreingestellte Code.':''}${unlocked?' In dieser Sitzung entsperrt.':''}</p>
+      <div class="row" style="margin-top:8px;flex-wrap:wrap">
+        <button class="action ghost small" id="pinChange">Code ändern</button>
+        <button class="action ghost small" id="pinRemove">Schutz aufheben</button>
+      </div>`;
+  } else {
+    tpl += `<p class="muted">Ohne Code ist der Gewichtsbereich für jeden sichtbar, der das Gerät in der Hand hat.</p>
+      <button class="action ghost small" id="pinSet" style="margin-top:8px">Code festlegen</button>`;
+  }
+  tpl += `<p class="muted" style="margin-top:8px">Sichtschutz im Haushalt, keine echte Zugangssperre – die Datenbank selbst hat keinen Login.</p>`;
+  if(isDefault) tpl += `<p class="muted" style="color:var(--warn);margin-top:6px">Der voreingestellte Code ist ein Geburtsdatum und damit für Familie leicht zu erraten. Für echten Schutz einen eigenen Code festlegen.</p>`;
 
   tpl += `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Zuletzt verwendet</h3>`;
   if((state.recent||[]).length){
@@ -651,6 +728,25 @@ function bind(){
   if(bs) bs.onclick = ()=> setBudget(document.getElementById('bInput').value);
   const rc = document.getElementById('recClear');
   if(rc) rc.onclick = clearRecent;
+
+  const pinGo = document.getElementById('pinGo');
+  const pinIn = document.getElementById('pinIn');
+  if(pinGo) pinGo.onclick = ()=> tryUnlock((pinIn.value||'').trim());
+  if(pinIn){
+    pinIn.focus();
+    pinIn.onkeydown = (e)=>{ if(e.key==='Enter') tryUnlock((pinIn.value||'').trim()); };
+  }
+
+  const askPin = (title)=> askName(title, 'Zahlencode', c=>{
+    if(c.length < 4){ showToast('Bitte mindestens vier Zeichen', true); return; }
+    setPin(c);
+  });
+  const pinSet = document.getElementById('pinSet');
+  if(pinSet) pinSet.onclick = ()=> askPin('Code festlegen');
+  const pinChange = document.getElementById('pinChange');
+  if(pinChange) pinChange.onclick = ()=> askPin('Neuen Code festlegen');
+  const pinRemove = document.getElementById('pinRemove');
+  if(pinRemove) pinRemove.onclick = removePin;
 }
 
 /* ---------- Namensdialog ---------- */
@@ -1148,6 +1244,7 @@ document.getElementById('people').onclick = async (e)=>{
   const btn = e.target.closest('[data-person]');
   if(!btn) return;
   person = btn.dataset.person;
+  unlocked = false;              // jede Person entsperrt für sich
   localStorage.setItem('pk_person', person);
   document.getElementById('view').innerHTML = '<p class="muted">Lädt…</p>';
   await loadPersonData();
