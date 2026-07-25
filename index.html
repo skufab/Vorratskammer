@@ -246,6 +246,19 @@
   .cook-dots{display:flex;gap:6px;flex-wrap:wrap;max-width:220px;justify-content:center;}
   .cook-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,249,240,.3);flex:none;}
   .cook-dot.active{background:var(--recipes);width:18px;border-radius:4px;transition:all .25s ease;}
+  .cook-timer-bar{
+    display:none;gap:8px;flex-wrap:wrap;justify-content:center;
+    width:100%;max-width:480px;margin-bottom:14px;
+  }
+  .cook-timer-chip{
+    display:flex;align-items:center;gap:7px;
+    background:rgba(255,249,240,.1);border:1.5px solid rgba(255,249,240,.25);
+    color:#FFF9F0;border-radius:20px;padding:6px 12px;
+    font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;
+  }
+  .cook-timer-chip strong{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;}
+  .cook-timer-chip.running{border-color:var(--recipes);background:rgba(216,98,47,.18);}
+  .cook-timer-chip.done{border-color:var(--week);color:var(--week-soft);}
   .cook-card{
     width:100%;max-width:480px;background:var(--card);border-radius:20px;
     padding:26px 22px;min-height:260px;display:flex;flex-direction:column;
@@ -606,7 +619,27 @@ function formatCookTime(sec){
 
 /* ---------- Kochmodus ---------- */
 let cookState = { recipeId:null, step:1 };
-let cookTimer = { interval:null, remaining:0, running:false };
+let activeTimers = {}; // key: "recipeId_step" -> {remaining, total, running, interval, done}
+let wakeLock = null;
+
+async function acquireWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
+    }
+  }catch(e){ /* nicht unterstützt oder gerade nicht möglich - einfach ignorieren */ }
+}
+function releaseWakeLock(){
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.getElementById('cookBg') && document.visibilityState === 'visible' && !wakeLock){
+    acquireWakeLock();
+  }
+});
+
+function timerKey(step){ return `${cookState.recipeId}_${step}`; }
 
 function cookOverlayHtml(){
   const r = state.recipes.find(x=>x.id===cookState.recipeId);
@@ -620,10 +653,16 @@ function cookOverlayHtml(){
 
   const stepText = annotatedSteps[idx-1];
   const timerSec = extractTimerSeconds(rawSteps[idx-1]);
-  const timerHtml = timerSec ? `<div class="cook-timer-box">
-      <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(timerSec)}</div>
-      <button class="action" id="cookTimerBtn">Timer starten</button>
-    </div>` : '';
+  let timerHtml = '';
+  if(timerSec){
+    const t = activeTimers[timerKey(idx)];
+    const displaySec = t ? Math.max(t.remaining,0) : timerSec;
+    const btnLabel = t ? (t.done ? 'Fertig ✓' : (t.running ? 'Pause' : 'Weiter')) : 'Timer starten';
+    timerHtml = `<div class="cook-timer-box">
+        <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(displaySec)}</div>
+        <button class="action" id="cookTimerBtn">${btnLabel}</button>
+      </div>`;
+  }
   const bodyHtml = `
     <div class="cook-step-badge">${idx}/${total}</div>
     <h2 class="cook-step-title">Schritt ${idx}</h2>
@@ -638,6 +677,7 @@ function cookOverlayHtml(){
       <div class="cook-dots">${dots}</div>
       <div style="width:32px"></div>
     </div>
+    <div class="cook-timer-bar" id="cookTimerBar"></div>
     <div class="cook-card">${bodyHtml}</div>
     <div class="cook-nav">
       <button class="action ghost" id="cookPrev" ${idx===1?'disabled':''}>Zurück</button>
@@ -647,27 +687,26 @@ function cookOverlayHtml(){
 }
 function openCookMode(recipeId){
   cookState = { recipeId, step:1 };
-  clearInterval(cookTimer.interval);
-  cookTimer = { interval:null, remaining:0, running:false };
   const wrap = document.createElement('div');
   wrap.innerHTML = cookOverlayHtml();
   document.body.appendChild(wrap.firstChild);
   bindCookEvents();
+  renderActiveTimerBar();
+  acquireWakeLock();
 }
 function closeCookMode(){
-  clearInterval(cookTimer.interval);
+  releaseWakeLock();
   const el = document.getElementById('cookBg');
   if(el) el.remove();
 }
 function renderCookMode(){
-  clearInterval(cookTimer.interval);
-  cookTimer = { interval:null, remaining:0, running:false };
   const el = document.getElementById('cookBg');
   if(!el) return;
   const wrap = document.createElement('div');
   wrap.innerHTML = cookOverlayHtml();
   el.replaceWith(wrap.firstChild);
   bindCookEvents();
+  renderActiveTimerBar();
 }
 function bindCookEvents(){
   const closeBtn = document.getElementById('cookClose');
@@ -686,31 +725,68 @@ function bindCookEvents(){
     const r = state.recipes.find(x=>x.id===cookState.recipeId);
     const steps = getRecipeSteps(r);
     const sec = extractTimerSeconds(steps[cookState.step-1]);
-    timerBtn.onclick = ()=> toggleCookTimer(sec);
+    const stepIdx = cookState.step;
+    timerBtn.onclick = ()=> toggleCookTimer(stepIdx, sec);
   }
 }
-function toggleCookTimer(totalSeconds){
-  const btn = document.getElementById('cookTimerBtn');
-  const display = document.getElementById('cookTimerDisplay');
-  if(!cookTimer.running){
-    if(!cookTimer.remaining) cookTimer.remaining = totalSeconds;
-    cookTimer.running = true;
-    btn.textContent = 'Pause';
-    cookTimer.interval = setInterval(()=>{
-      cookTimer.remaining--;
-      if(display) display.textContent = formatCookTime(Math.max(cookTimer.remaining,0));
-      if(cookTimer.remaining <= 0){
-        clearInterval(cookTimer.interval);
-        cookTimer.running = false;
-        btn.textContent = 'Fertig ✓';
-        showToast('Timer abgelaufen ⏰');
+function toggleCookTimer(step, totalSeconds){
+  const key = timerKey(step);
+  if(!activeTimers[key]){
+    activeTimers[key] = { remaining: totalSeconds, total: totalSeconds, running:false, interval:null, done:false };
+  }
+  const t = activeTimers[key];
+  if(t.done) return;
+  if(!t.running){
+    t.running = true;
+    t.interval = setInterval(()=>{
+      t.remaining--;
+      updateTimerUi(step);
+      if(t.remaining <= 0){
+        clearInterval(t.interval);
+        t.running = false;
+        t.done = true;
+        updateTimerUi(step);
+        showToast(`⏰ Timer Schritt ${step} ist fertig`);
+        if(navigator.vibrate) navigator.vibrate([250,120,250]);
       }
     }, 1000);
   } else {
-    cookTimer.running = false;
-    clearInterval(cookTimer.interval);
-    btn.textContent = 'Weiter';
+    t.running = false;
+    clearInterval(t.interval);
   }
+  updateTimerUi(step);
+}
+function updateTimerUi(step){
+  const t = activeTimers[timerKey(step)];
+  if(!t) return;
+  if(cookState.step === step){
+    const display = document.getElementById('cookTimerDisplay');
+    const btn = document.getElementById('cookTimerBtn');
+    if(display) display.textContent = formatCookTime(Math.max(t.remaining,0));
+    if(btn) btn.textContent = t.done ? 'Fertig ✓' : (t.running ? 'Pause' : 'Weiter');
+  }
+  renderActiveTimerBar();
+}
+function renderActiveTimerBar(){
+  const bar = document.getElementById('cookTimerBar');
+  if(!bar) return;
+  const prefix = `${cookState.recipeId}_`;
+  const rows = Object.keys(activeTimers)
+    .filter(k=>k.startsWith(prefix))
+    .filter(k=>{ const t=activeTimers[k]; return t.running || (t.remaining>0 && t.remaining<t.total) || t.done; })
+    .map(k=>{
+      const step = k.slice(prefix.length);
+      const t = activeTimers[k];
+      const cls = t.done ? 'done' : (t.running ? 'running' : '');
+      return `<button class="cook-timer-chip ${cls}" data-timerjump="${step}">
+        <span>Schritt ${step}</span><strong>${t.done?'✓':formatCookTime(Math.max(t.remaining,0))}</strong>
+      </button>`;
+    });
+  bar.innerHTML = rows.join('');
+  bar.style.display = rows.length ? 'flex' : 'none';
+  bar.querySelectorAll('[data-timerjump]').forEach(btn=>{
+    btn.onclick = ()=>{ cookState.step = parseInt(btn.dataset.timerjump,10); renderCookMode(); };
+  });
 }
 
 const UNITS = ['g','kg','ml','l','tl','el','stk','stück','prise','prisen','bund','zehe','zehen','scheibe','scheiben','dose','dosen','pkg','packung','packungen','päckchen'];
