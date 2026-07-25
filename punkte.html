@@ -22,6 +22,10 @@
     --pk:#2F6F9F;
     --pk-soft:#D6E5F1;
     --weight:#5F8A3E;
+    --house:#C1477A;
+    --house-soft:#F3D9E5;
+    --sport:#B9762F;
+    --sport-soft:#F2E2C8;
     --weight-soft:#DCEAC9;
     --warn:#D8622F;
   }
@@ -77,6 +81,7 @@
   .tab.active{transform:translateY(0);color:#fff;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
   .tab[data-tab="today"].active{background:var(--pk);}
   .tab[data-tab="weight"].active{background:var(--weight);}
+  .tab[data-tab="house"].active{background:var(--house);}
   .tab[data-tab="profile"].active{background:var(--ink);}
 
   .card{
@@ -133,6 +138,13 @@
   .stat b{font-family:'Fraunces',serif;font-size:1rem;}
   .stat span{font-size:0.7rem;color:var(--ink-soft);}
 
+  .hinweis{
+    background:var(--weight-soft);border:1px solid var(--line);border-radius:14px;
+    padding:13px 15px;margin-top:16px;display:flex;flex-direction:column;gap:2px;
+  }
+  .hinweis b{font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;}
+  .hinweis span{font-size:0.84rem;color:var(--ink-soft);}
+
   /* ---- Mahlzeiten ---- */
   .meal{border-top:1px solid var(--line);padding:14px 0 6px;}
   .meal:first-of-type{border-top:none;}
@@ -156,6 +168,53 @@
     font-family:'Inter',sans-serif;cursor:pointer;
   }
   .addbtn:hover{border-color:var(--pk);color:var(--pk);}
+
+  .sportbox{
+    background:var(--sport-soft);border:1px solid var(--line);border-radius:16px;
+    padding:14px 16px;margin-top:14px;
+  }
+  .sportbox .addbtn{background:#fff;}
+  .intensity-row{display:flex;gap:6px;}
+  .intensity-chip{
+    flex:1;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+    padding:9px 6px;cursor:pointer;text-align:center;font-family:'Inter',sans-serif;
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .intensity-chip b{font-size:0.86rem;}
+  .intensity-chip span{font-size:0.66rem;color:var(--ink-soft);line-height:1.25;}
+  .intensity-chip.active{border-color:var(--sport);background:var(--sport-soft);}
+
+  /* ---- Haus ---- */
+  .hausbox{
+    background:var(--house-soft);border:1px solid var(--line);border-radius:16px;
+    padding:18px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .haus-zahl{font-family:'Fraunces',serif;font-weight:600;font-size:2.8rem;line-height:1;color:var(--house);}
+  .haus-von{font-size:1.2rem;opacity:.6;}
+  .haus-label{font-size:0.84rem;color:var(--ink-soft);}
+  .haus-jubel{font-size:0.86rem;font-weight:600;color:var(--house);margin-top:6px;text-align:center;}
+
+  .punkte-woche{display:flex;gap:4px;margin-top:6px;}
+  .punkte-woche i{
+    width:13px;height:13px;border-radius:50%;
+    background:var(--line);display:inline-block;
+  }
+  .punkte-woche i.an{background:var(--house);}
+
+  .badges{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+  .badges::-webkit-scrollbar{display:none;}
+  .badge-k{
+    flex:0 0 108px;background:var(--paper);border:1px solid var(--line);border-radius:14px;
+    padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+    opacity:.55;
+  }
+  .badge-k.done{opacity:1;background:var(--house-soft);border-color:var(--house);}
+  .b-icon{font-size:1.7rem;line-height:1.2;}
+  .b-label{font-family:'Fraunces',serif;font-weight:600;font-size:0.8rem;}
+  .b-note{font-size:0.66rem;color:var(--ink-soft);line-height:1.3;}
+
+  .balken{background:var(--line);border-radius:20px;height:12px;overflow:hidden;}
+  .balken span{display:block;height:100%;background:var(--house);border-radius:20px;transition:width .4s ease;}
 
   /* ---- Modal ---- */
   .overlay{
@@ -222,6 +281,7 @@
   <div class="tabs">
     <button class="tab" data-tab="today">Heute</button>
     <button class="tab" data-tab="weight">Gewicht</button>
+    <button class="tab" data-tab="house">Haus</button>
     <button class="tab" data-tab="profile">Profil</button>
   </div>
   <div class="card" id="view"><p class="muted">Lädt…</p></div>
@@ -249,6 +309,35 @@ const PEOPLE = [
   {id:'mama',   name:'Oma Gigi', recipes:false, defaultPin:'a909965db62eebfc1435ef3cba7d3485becac0fd7db5c52fab379af1f1a6cd96'}
 ];
 const RECENT_MAX = 20;
+const WEEKDAYS = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const INTENSITY = [
+  {id:'leicht', label:'Leicht',  hint:'Spaziergang, lockeres Rad fahren', perMin:0.133},
+  {id:'mittel', label:'Mittel',  hint:'zügiges Training, Schwimmen',      perMin:0.233},
+  {id:'hoch',   label:'Hoch',    hint:'Fitnessstudio, Joggen, intensiv',  perMin:0.333}
+];
+function sportPoints(minutes, intensityId){
+  const lvl = INTENSITY.find(i=> i.id===intensityId) || INTENSITY[0];
+  return Math.max(0, Math.round((Number(minutes)||0) * lvl.perMin));
+}
+/* Montag der aktuellen Woche, als Schlüssel fürs Wochenkonto */
+function mondayIso(){
+  const d = new Date();
+  const day = d.getDay();
+  d.setDate(d.getDate() + (day===0 ? -6 : 1-day));
+  return isoDate(d);
+}
+function bankEarned(){ return (state.sportBank.entries||[]).reduce((s,e)=> s+e.points, 0); }
+function bankRedeemed(){ return Object.values(state.sportBank.redeemed||{}).reduce((s,v)=> s+v, 0); }
+function bankAvailable(){ return Math.max(0, bankEarned() - bankRedeemed()); }
+function redeemedToday(){ return (state.sportBank.redeemed||{})[todayIso] || 0; }
+/* Meilensteine sind einmalig erreicht und können nicht wieder verloren gehen. */
+const MILESTONES = [
+  {n:1,   icon:'🌱', label:'Angefangen',    note:'Der erste Eintrag ist der schwerste.'},
+  {n:7,   icon:'🌿', label:'Eine Woche',    note:'Sieben Tage erfasst.'},
+  {n:30,  icon:'🪴', label:'Ein Monat',     note:'Dreißig Tage zusammen.'},
+  {n:100, icon:'🌳', label:'Hundert Tage',  note:'Daraus ist eine Gewohnheit geworden.'},
+  {n:365, icon:'🏡', label:'Ein Jahr',      note:'Dreihundertfünfundsechzig Tage.'}
+];
 const MEALS = [
   {key:'breakfast', label:'Frühstück'},
   {key:'lunch',     label:'Mittagessen'},
@@ -283,7 +372,7 @@ function visibleTemplates(){
   });
 }
 let activeTab = 'today';
-let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[] };
+let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[], log:[], house:null, sportBank:{entries:[],redeemed:{}} };
 let sheet = null;
 let unlocked = false;   // gilt nur für die laufende Sitzung und nur für die gewählte Person
 
@@ -344,6 +433,8 @@ function dayKey(){ return 'punkte:' + person + ':day:' + todayIso; }
 function weightKey(){ return 'punkte:' + person + ':weight'; }
 function profileKey(){ return 'punkte:' + person + ':profile'; }
 function recentKey(){ return 'punkte:' + person + ':recent'; }
+function logKey(){ return 'punkte:' + person + ':log'; }
+function sportBankKey(){ return 'punkte:' + person + ':sportbank:' + mondayIso(); }
 
 let toastTimer = null;
 function showToast(msg, isError){
@@ -373,6 +464,11 @@ function scale(per100, gram){
     protein:(per100.protein||0)*f, fiber:(per100.fiber||0)*f
   };
 }
+function formatDate(iso){
+  const parts = String(iso).split('-');
+  if(parts.length !== 3) return iso;
+  return parts[2] + '.' + parts[1] + '.' + parts[0];
+}
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -382,9 +478,22 @@ async function loadPersonData(){
   state.weight  = await loadKey(weightKey(), []);
   state.profile = await loadKey(profileKey(), {budget:DEFAULT_BUDGET});
   state.recent  = await loadKey(recentKey(), []);
+  state.log     = await loadKey(logKey(), []);
+  state.sportBank = await loadKey(sportBankKey(), {entries:[], redeemed:{}});
+  if(!state.sportBank.entries) state.sportBank.entries = [];
+  if(!state.sportBank.redeemed) state.sportBank.redeemed = {};
   if(!state.day.entries) state.day.entries = [];
 }
 const TEMPLATES_KEY = 'punkte:vorlagen';
+/* Erfassungstage aller drei laden – bewusst nur die Tage, keine Inhalte und kein Gewicht. */
+async function loadHouse(){
+  const out = {};
+  for(const p of PEOPLE){
+    out[p.id] = await loadKey('punkte:' + p.id + ':log', []);
+  }
+  state.house = out;
+}
+
 async function loadShared(){
   state.recipes   = await loadKey('recipes', []);
   state.templates = await loadKey(TEMPLATES_KEY, []);
@@ -393,8 +502,66 @@ async function loadShared(){
 async function addEntry(entry){
   state.day.entries.push(Object.assign({id:uid()}, entry));
   await saveKey(dayKey(), state.day);
+  await markLogged();
   render();
 }
+/* Tag als erfasst vermerken – Grundlage fuer die Serie */
+async function markLogged(){
+  if(state.log.indexOf(todayIso) !== -1) return;
+  state.house = null;   // Hausansicht beim nächsten Öffnen neu laden
+  state.log.push(todayIso);
+  state.log.sort();
+  if(state.log.length > 400) state.log = state.log.slice(-400);
+  await saveKey(logKey(), state.log, true);
+}
+
+/* Wiegetag: 0 = Sonntag … 6 = Samstag, null = keiner eingestellt */
+function weighDay(){
+  const d = state.profile.weighDay;
+  return (typeof d === 'number' && d >= 0 && d <= 6) ? d : null;
+}
+function isWeighDayToday(){
+  const d = weighDay();
+  return d !== null && new Date().getDay() === d;
+}
+function nextWeighDate(){
+  const d = weighDay();
+  if(d === null) return null;
+  const now = new Date();
+  let diff = (d - now.getDay() + 7) % 7;
+  if(diff === 0) diff = 7;
+  return shiftDate(todayIso, diff);
+}
+function weighedToday(){
+  return (state.weight||[]).some(w=> w.date === todayIso);
+}
+
+function shiftDate(iso, days){
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return isoDate(d);
+}
+
+/* Serie: aufeinanderfolgende Tage mit mindestens einem Eintrag.
+   Sie reisst erst, wenn ein ganzer Tag ausgelassen wurde – heute noch nichts
+   erfasst zu haben beendet sie also nicht sofort. */
+function computeStreak(log){
+  const set = new Set(log || state.log || []);
+  let cursor = todayIso;
+  if(!set.has(cursor)) cursor = shiftDate(todayIso, -1);
+  let n = 0;
+  while(set.has(cursor)){ n++; cursor = shiftDate(cursor, -1); }
+  return n;
+}
+
+/* Wie viele der letzten sieben Tage wurden erfasst */
+function loggedThisWeek(log){
+  const set = new Set(log || state.log || []);
+  let n = 0;
+  for(let i=0;i<7;i++){ if(set.has(shiftDate(todayIso, -i))) n++; }
+  return n;
+}
+
 async function pushRecent(item){
   if(!item || !item.name) return;
   state.recent = state.recent.filter(r=> r.name !== item.name);
@@ -411,6 +578,7 @@ async function clearRecent(){
 async function addEntries(list){
   list.forEach(e=> state.day.entries.push(Object.assign({id:uid()}, e)));
   await saveKey(dayKey(), state.day);
+  await markLogged();
   render();
 }
 async function saveTemplate(name, mealKey){
@@ -451,13 +619,17 @@ async function setPortions(id, portions){
   await saveKey(dayKey(), state.day);
   render();
 }
-async function addWeight(kg){
+async function addWeight(kg, date){
   const v = parseFloat(String(kg).replace(',','.'));
   if(!v || v<=0){ showToast('Bitte gültiges Gewicht eingeben', true); return; }
-  state.weight = state.weight.filter(w=>w.date!==todayIso);
-  state.weight.push({date:todayIso, kg:v});
+  const d = (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) ? date : todayIso;
+  if(d > todayIso){ showToast('Kein Datum in der Zukunft', true); return; }
+  const ersetzt = state.weight.some(w=> w.date===d);
+  state.weight = state.weight.filter(w=>w.date!==d);
+  state.weight.push({date:d, kg:v});
   state.weight.sort((a,b)=> a.date<b.date?-1:1);
   await saveKey(weightKey(), state.weight);
+  if(ersetzt) showToast('Eintrag vom ' + formatDate(d) + ' überschrieben ✓');
   render();
 }
 async function setPin(code){
@@ -488,6 +660,57 @@ async function tryUnlock(code){
     const inp = document.getElementById('pinIn');
     if(inp){ inp.value = ''; inp.focus(); }
   }
+}
+
+async function deleteWeight(date){
+  state.weight = state.weight.filter(w=> w.date !== date);
+  await saveKey(weightKey(), state.weight);
+  showToast('Eintrag gelöscht');
+  render();
+}
+
+async function setWeighDay(v){
+  state.profile.weighDay = (v === '') ? null : Number(v);
+  await saveKey(profileKey(), state.profile);
+  render();
+}
+
+async function addSport(label, minutes, intensityId){
+  const pts = sportPoints(minutes, intensityId);
+  if(pts<=0){ showToast('Bitte eine Dauer eingeben', true); return; }
+  state.sportBank.entries.push({id:uid(), label, minutes:Number(minutes), intensity:intensityId, points:pts, date:todayIso});
+  await saveKey(sportBankKey(), state.sportBank);
+  showToast('+' + pts + ' Punkte ins Wochenkonto ✓');
+  render();
+}
+async function removeSport(id){
+  const e = state.sportBank.entries.find(x=> x.id===id);
+  state.sportBank.entries = state.sportBank.entries.filter(x=> x.id!==id);
+  // Bereits eingelöste Punkte, die durch das Löschen nicht mehr gedeckt sind, zurücknehmen
+  if(e){
+    let over = bankRedeemed() - bankEarned();
+    while(over > 0){
+      const days = Object.keys(state.sportBank.redeemed).sort().reverse();
+      const d = days.find(x=> state.sportBank.redeemed[x] > 0);
+      if(!d) break;
+      const cut = Math.min(over, state.sportBank.redeemed[d]);
+      state.sportBank.redeemed[d] -= cut;
+      if(state.sportBank.redeemed[d] <= 0) delete state.sportBank.redeemed[d];
+      over -= cut;
+    }
+  }
+  await saveKey(sportBankKey(), state.sportBank);
+  render();
+}
+async function redeemSport(amount){
+  const n = Math.round(Number(amount)||0);
+  const avail = bankAvailable();
+  if(n<=0){ showToast('Bitte eine Punktzahl eingeben', true); return; }
+  if(n>avail){ showToast('Nur ' + avail + ' Punkte im Wochenkonto verfügbar', true); return; }
+  state.sportBank.redeemed[todayIso] = (state.sportBank.redeemed[todayIso]||0) + n;
+  await saveKey(sportBankKey(), state.sportBank);
+  showToast(n + ' Punkte für heute eingelöst ✓');
+  render();
 }
 
 async function setBudget(v){
@@ -523,9 +746,13 @@ function ringSvg(used, budget){
 }
 
 function viewToday(){
-  const budget = state.profile.budget || DEFAULT_BUDGET;
+  const baseBudget = state.profile.budget || DEFAULT_BUDGET;
+  const sportPts = redeemedToday();
+  const budget = baseBudget + sportPts;
   const used = state.day.entries.reduce((s,e)=> s+points(e), 0);
   const left = budget - used;
+  const streak = computeStreak();
+  const week = loggedThisWeek();
   const kcal = Math.round(state.day.entries.reduce((s,e)=> s+(Number(e.kcal)||0), 0));
   const prot = Math.round(state.day.entries.reduce((s,e)=> s+(Number(e.protein)||0), 0));
 
@@ -534,12 +761,70 @@ function viewToday(){
     <p class="ringstatus ${left<0?'over':''}">${
       left>=0 ? `Noch ${left} Punkte für heute` : `${Math.abs(left)} Punkte über dem Budget`
     }</p>
+    ${sportPts ? `<p class="muted" style="margin-top:2px">davon ${sportPts} Punkte heute aus dem Bewegungskonto 🚶</p>` : ''}
     <div class="stats">
       <div class="stat"><b>${kcal}</b><span>kcal</span></div>
       <div class="stat"><b>${prot} g</b><span>Protein</span></div>
       <div class="stat"><b>${state.day.entries.length}</b><span>Einträge</span></div>
     </div>
+    <div class="stats" style="margin-top:8px">
+      <div class="stat"><b>${streak}${streak?' 🔥':''}</b><span>Tage in Folge</span></div>
+      <div class="stat"><b>${week}/7</b><span>diese Woche</span></div>
+    </div>
   </div>`;
+
+  const avail = bankAvailable();
+  const entries = (state.sportBank.entries||[]).slice().reverse();
+  html += `<div class="sportbox">
+    <div class="meal-head" style="margin-bottom:2px">
+      <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0">🚶 Bewegungskonto</h3>
+      <span class="badge" style="background:var(--sport-soft);color:var(--sport)">${avail} übrig</span>
+    </div>
+    <p class="muted" style="margin:2px 0 0">Diese Woche verdient, über die ganze Woche einlösbar.</p>`;
+
+  if(entries.length){
+    html += `<ul class="items" style="margin-top:8px">` + entries.map(e=>{
+      const lvl = INTENSITY.find(i=> i.id===e.intensity);
+      return `<li><div class="it-txt">
+          <span class="it-name">${esc(e.label)}</span>
+          <span class="it-meta">${e.minutes} Min. · ${lvl?esc(lvl.label):''} · ${esc(formatDate(e.date))}</span>
+        </div>
+        <span class="it-pts">+${e.points}</span>
+        <button class="del" data-sdel="${esc(e.id)}" aria-label="Sporteintrag entfernen">×</button>
+      </li>`;
+    }).join('') + `</ul>`;
+  }
+  html += `<button class="addbtn" id="sportAdd" style="margin-top:${entries.length?'8px':'6px'}">+ Aktivität eintragen</button>`;
+
+  if(avail>0){
+    html += `<div class="row" style="margin-top:10px;gap:6px">
+      <input type="number" id="spRedeem" min="1" max="${avail}" placeholder="Punkte" style="flex:1">
+      <button class="action pk small" id="spRedeemBtn" style="flex:none">Heute einlösen</button>
+    </div>`;
+  }
+  if(sportPts) html += `<p class="muted" style="margin-top:8px">Heute bereits eingelöst: ${sportPts} Punkte.</p>`;
+  html += `</div>`;
+
+  if(isWeighDayToday()){
+    if(!weighedToday()){
+      html += `<div class="hinweis">
+        <b>Heute ist Wiegetag 🗓️</b>
+        <span>Trag dein Gewicht im Tab „Gewicht" ein – dann gibt es hier den Wochenrückblick.</span>
+      </div>`;
+    } else {
+      const wk = weekChange();
+      html += `<div class="hinweis">
+        <b>Wochenrückblick</b>
+        <span>${week} von 7 Tagen erfasst${streak? ' · '+streak+' Tage in Folge':''}.</span>
+        <span>${wk ? 'Gewicht: '+wk.sign+wk.value+' kg gegenüber '+esc(formatDate(wk.from)) : 'Für einen Gewichtsvergleich fehlt noch ein zweiter Wiegetag.'}</span>
+        <span style="margin-top:4px">${
+          week>=6 ? 'Fast lückenlos – schön dranbleiben. 🌟'
+          : week>=4 ? 'Solide Woche. Jeder erfasste Tag hilft beim Überblick.'
+          : 'Kein Grund zur Sorge – die nächste Woche zählt genauso.'
+        }</span>
+      </div>`;
+    }
+  }
 
   MEALS.forEach(m=>{
     const items = state.day.entries.filter(e=>e.meal===m.key);
@@ -573,6 +858,22 @@ function viewToday(){
   return html;
 }
 
+/* Veraenderung zum Wert, der einer Woche zuvor am naechsten liegt */
+function weekChange(){
+  const list = (state.weight||[]).slice().sort((a,b)=> a.date<b.date?-1:1);
+  if(list.length < 2) return null;
+  const latest = list[list.length-1];
+  const target = shiftDate(latest.date, -7);
+  let best = null, bestDiff = Infinity;
+  for(let i=0;i<list.length-1;i++){
+    const days = Math.abs((new Date(list[i].date+'T12:00:00') - new Date(target+'T12:00:00')) / 86400000);
+    if(days < bestDiff){ bestDiff = days; best = list[i]; }
+  }
+  if(!best || bestDiff > 4) return null;   // ohne halbwegs passenden Vergleichswert lieber nichts zeigen
+  const d = latest.kg - best.kg;
+  return { sign: d>0?'+':(d<0?'−':'±'), value: Math.abs(d).toFixed(1), from: best.date };
+}
+
 function viewLocked(){
   return `<h2 class="section-title">Gewicht – ${esc(personName())}</h2>
     <p class="muted" style="margin-bottom:16px">Dieser Bereich ist mit einem Code geschützt.</p>
@@ -588,10 +889,26 @@ function viewWeight(){
   if(effectivePin() && !unlocked) return viewLocked();
   const list = state.weight.slice(-14);
   let html = `<h2 class="section-title">Gewicht – ${esc(personName())}</h2>`;
-  html += `<div class="row" style="margin-bottom:14px">
-    <input type="number" step="0.1" id="wInput" placeholder="Gewicht eintragen" style="flex:1">
-    <button class="action" id="wSave" style="flex:none">Eintragen</button>
-  </div>`;
+  const wd = weighDay();
+  if(wd !== null){
+    const nxt = nextWeighDate();
+    html += `<div class="hinweis" style="margin:0 0 14px">
+      <b>Wiegetag: ${esc(WEEKDAYS[wd])}</b>
+      <span>${isWeighDayToday() ? (weighedToday()?'Heute schon eingetragen ✓':'Heute ist es soweit.') : 'Nächster Termin: '+esc(formatDate(nxt))}</span>
+    </div>`;
+  }
+
+  html += `<div class="field">
+      <label>Datum</label>
+      <input type="date" id="wDate" value="${todayIso}" max="${todayIso}">
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <input type="number" step="0.1" id="wInput" placeholder="Gewicht eintragen" style="flex:1">
+      <button class="action" id="wSave" style="flex:none">Eintragen</button>
+    </div>`;
+
+  const wk = weekChange();
+  if(wk) html += `<p class="delta" style="margin:0 0 12px">${wk.sign}${wk.value} kg gegenüber ${esc(formatDate(wk.from))}</p>`;
 
   if(list.length>=2){
     const vals = list.map(w=>w.kg);
@@ -614,12 +931,93 @@ function viewWeight(){
     html += `<p class="muted">Noch kein Gewicht erfasst.</p>`;
   }
 
-  if(list.length){
-    html += `<ul class="items" style="margin-top:16px">` + list.slice().reverse().map(w=>
-      `<li><div class="it-txt"><span class="it-name">${w.kg.toFixed(1)} kg</span>
-       <span class="it-meta">${esc(w.date)}</span></div></li>`
-    ).join('') + `</ul>`;
+  const all = state.weight;
+  if(all.length){
+    html += `<h3 class="section-title" style="font-size:1rem;margin:20px 0 4px">Alle Einträge</h3>`;
+    html += `<ul class="items">` + all.slice().reverse().map((w, i, arr)=>{
+      const prev = arr[i+1];                       // arr ist absteigend, also ist i+1 der ältere Wert
+      let delta = '';
+      if(prev){
+        const d = w.kg - prev.kg;
+        if(Math.abs(d) >= 0.05) delta = ' · ' + (d>0?'+':'−') + Math.abs(d).toFixed(1) + ' kg';
+      }
+      return `<li>
+        <div class="it-txt">
+          <span class="it-name">${w.kg.toFixed(1)} kg</span>
+          <span class="it-meta">${esc(formatDate(w.date))}${esc(delta)}</span>
+        </div>
+        <button class="del" data-wdel="${esc(w.date)}" aria-label="Eintrag vom ${esc(w.date)} löschen">×</button>
+      </li>`;
+    }).join('') + `</ul>`;
   }
+  return html;
+}
+
+function milestonesFor(total){
+  return MILESTONES.map(m=> Object.assign({}, m, {done: total >= m.n}));
+}
+
+function viewHouse(){
+  if(!state.house){
+    return `<h2 class="section-title">Unser Haus</h2><p class="muted">Lädt…</p>`;
+  }
+
+  const rows = PEOPLE.map(p=>{
+    const log = state.house[p.id] || [];
+    return {
+      id:p.id, name:p.name,
+      total: log.length,
+      week: loggedThisWeek(log),
+      streak: computeStreak(log),
+      days: Array.from({length:7}, (_,i)=> log.indexOf(shiftDate(todayIso, -(6-i))) !== -1)
+    };
+  });
+
+  const gesamtWoche = rows.reduce((s,r)=> s+r.week, 0);
+  const gesamtTage  = rows.reduce((s,r)=> s+r.total, 0);
+  const alleHeute   = rows.every(r=> r.days[6]);
+
+  let html = `<h2 class="section-title">Unser Haus</h2>`;
+
+  html += `<div class="hausbox">
+    <span class="haus-zahl">${gesamtWoche}<span class="haus-von">/21</span></span>
+    <span class="haus-label">Einträge diese Woche, zusammen</span>
+    ${alleHeute ? `<span class="haus-jubel">Heute haben alle drei etwas eingetragen 🎉</span>` : ''}
+  </div>`;
+
+  html += `<ul class="items" style="margin-top:16px">` + rows.map(r=>`
+    <li style="align-items:flex-start">
+      <div class="it-txt">
+        <span class="it-name">${esc(r.name)}</span>
+        <span class="punkte-woche">${r.days.map(d=> `<i class="${d?'an':''}"></i>`).join('')}</span>
+      </div>
+      <span class="it-meta" style="text-align:right;white-space:nowrap">
+        ${r.streak? r.streak+' 🔥':'—'}<br>${r.total} Tage
+      </span>
+    </li>`).join('') + `</ul>`;
+  html += `<p class="muted" style="margin-top:6px">Die letzten sieben Tage, älteste links. Kein Wettbewerb – nur damit ihr seht, dass ihr nicht allein dran seid.</p>`;
+
+  /* Meilensteine des Hauses, gemeinsam gerechnet */
+  html += `<h3 class="section-title" style="font-size:1rem;margin:24px 0 4px">Gemeinsame Meilensteine</h3>
+    <p class="muted" style="margin:0 0 10px">${gesamtTage} erfasste Tage von euch dreien zusammen.</p>`;
+  html += `<div class="badges">` + milestonesFor(gesamtTage).map(m=>`
+    <div class="badge-k ${m.done?'done':''}">
+      <span class="b-icon">${m.done? m.icon : '🔒'}</span>
+      <span class="b-label">${esc(m.label)}</span>
+      <span class="b-note">${m.done? esc(m.note) : 'ab '+m.n+' Tagen'}</span>
+    </div>`).join('') + `</div>`;
+
+  /* Rezepte vervollstaendigen – eine gemeinsame Aufgabe mit sichtbarem Fortschritt */
+  const rez = state.recipes.filter(r=> r && r.title);
+  if(rez.length){
+    const mit = rez.filter(r=> Number(r.calories) > 0).length;
+    const pct = Math.round(mit / rez.length * 100);
+    html += `<h3 class="section-title" style="font-size:1rem;margin:24px 0 4px">Rezepte mit Nährwerten</h3>
+      <div class="balken"><span style="width:${pct}%"></span></div>
+      <p class="muted" style="margin-top:6px">${mit} von ${rez.length} Rezepten haben Kalorien hinterlegt (${pct} %).
+      ${pct===100 ? 'Vollständig – stark! 🌟' : 'Jedes ergänzte Rezept macht das Eintragen für alle leichter.'}</p>`;
+  }
+
   return html;
 }
 
@@ -645,6 +1043,16 @@ function viewProfile(){
   tpl += hasRecipes()
     ? `<p class="muted" style="margin-top:10px">Fabian und Elena teilen sich ihre Vorlagen. Oma Gigi sieht nur ihre eigenen.</p>`
     : `<p class="muted" style="margin-top:10px">Diese Mahlzeiten sind nur für dich – die anderen sehen sie nicht.</p>`;
+
+  const wd = weighDay();
+  let tag = `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Wiegetag</h3>
+    <div class="field">
+      <select id="wdSel">
+        <option value="">Kein fester Tag</option>
+        ${WEEKDAYS.map((n,i)=> `<option value="${i}" ${wd===i?'selected':''}>${esc(n)}</option>`).join('')}
+      </select>
+    </div>
+    <p class="muted">An diesem Tag erinnert dich die Tagesansicht ans Wiegen. Ein fester Rhythmus sagt mehr aus als tägliches Wiegen, weil Wasserhaushalt und Verdauung von Tag zu Tag stark schwanken.</p>`;
 
   const hasPin = !!effectivePin();
   const isDefault = !state.profile.pinHash && !state.profile.pinOff;
@@ -678,6 +1086,7 @@ function viewProfile(){
         <button class="action" id="bSave" style="flex:none">Speichern</button>
       </div>
     </div>
+    ${tag}
     ${tpl}
     <p class="muted" style="margin-top:22px">
       <b>Wie die Punkte entstehen:</b><br>
@@ -697,6 +1106,7 @@ function render(){
   const view = document.getElementById('view');
   if(activeTab==='today')       view.innerHTML = viewToday();
   else if(activeTab==='weight') view.innerHTML = viewWeight();
+  else if(activeTab==='house')  view.innerHTML = viewHouse();
   else                          view.innerHTML = viewProfile();
   bind();
 }
@@ -708,6 +1118,13 @@ function bind(){
   document.querySelectorAll('[data-del]').forEach(el=>{
     el.onclick = ()=> removeEntry(el.dataset.del);
   });
+  document.querySelectorAll('[data-sdel]').forEach(el=>{
+    el.onclick = ()=> removeSport(el.dataset.sdel);
+  });
+  const spAdd = document.getElementById('sportAdd');
+  if(spAdd) spAdd.onclick = openSportSheet;
+  const spRedeemBtn = document.getElementById('spRedeemBtn');
+  if(spRedeemBtn) spRedeemBtn.onclick = ()=> redeemSport(document.getElementById('spRedeem').value);
   document.querySelectorAll('[data-tpl-save]').forEach(el=>{
     el.onclick = ()=>{
       const mealKey = el.dataset.tplSave;
@@ -716,18 +1133,41 @@ function bind(){
     };
   });
   document.querySelectorAll('[data-tpl-del]').forEach(el=>{
-    el.onclick = ()=> deleteTemplate(el.dataset.tplDel);
+    el.onclick = ()=>{
+      const id = el.dataset.tplDel;
+      const t = state.templates.find(x=> String(x.id)===String(id));
+      askConfirm('Vorlage löschen?', (t? '„'+t.name+'"' : 'Die Vorlage') + ' wird entfernt.', 'Löschen', ()=> deleteTemplate(id));
+    };
   });
   document.querySelectorAll('[data-portions]').forEach(el=>{
     el.onchange = ()=> setPortions(el.dataset.portions, el.value);
   });
 
+  document.querySelectorAll('[data-wdel]').forEach(el=>{
+    el.onclick = ()=>{
+      const date = el.dataset.wdel;
+      const w = state.weight.find(x=> x.date===date);
+      askConfirm(
+        'Eintrag löschen?',
+        (w ? w.kg.toFixed(1) + ' kg vom ' + formatDate(date) : formatDate(date)) + ' wird entfernt. Das lässt sich nicht rückgängig machen.',
+        'Löschen',
+        ()=> deleteWeight(date)
+      );
+    };
+  });
+
   const ws = document.getElementById('wSave');
-  if(ws) ws.onclick = ()=> addWeight(document.getElementById('wInput').value);
+  if(ws) ws.onclick = ()=>{
+    const dEl = document.getElementById('wDate');
+    addWeight(document.getElementById('wInput').value, dEl ? dEl.value : todayIso);
+  };
   const bs = document.getElementById('bSave');
   if(bs) bs.onclick = ()=> setBudget(document.getElementById('bInput').value);
+  const wdSel = document.getElementById('wdSel');
+  if(wdSel) wdSel.onchange = ()=> setWeighDay(wdSel.value);
+
   const rc = document.getElementById('recClear');
-  if(rc) rc.onclick = clearRecent;
+  if(rc) rc.onclick = ()=> askConfirm('Liste leeren?', 'Alle zuletzt verwendeten Einträge werden entfernt.', 'Leeren', clearRecent);
 
   const pinGo = document.getElementById('pinGo');
   const pinIn = document.getElementById('pinIn');
@@ -774,6 +1214,76 @@ function askName(title, placeholder, cb){
   o.querySelector('#nameOk').onclick = done;
   o.querySelector('#nameNo').onclick = ()=> o.remove();
   inp.onkeydown = (e)=>{ if(e.key==='Enter') done(); };
+}
+
+/* ---------- Sport-Dialog ---------- */
+function openSportSheet(){
+  const o = document.createElement('div');
+  o.className = 'overlay';
+  o.onclick = (ev)=>{ if(ev.target===o) o.remove(); };
+  const chips = INTENSITY.map((lvl,i)=>
+    `<button type="button" class="intensity-chip ${i===1?'active':''}" data-lvl="${lvl.id}">
+      <b>${esc(lvl.label)}</b><span>${esc(lvl.hint)}</span>
+    </button>`
+  ).join('');
+  o.innerHTML = `<div class="sheet">
+    <div class="grip"></div>
+    <h3>Bewegung eintragen</h3>
+    <div class="field"><label>Was hast du gemacht?</label><input id="spName" placeholder="z. B. Fitnessstudio, Spazieren, Tennis"></div>
+    <div class="field">
+      <label>Intensität – wie du sie selbst einschätzt</label>
+      <div class="intensity-row">${chips}</div>
+    </div>
+    <div class="field"><label>Dauer in Minuten</label><input id="spMin" type="number" min="1" step="5" value="30"></div>
+    <div class="preview"><b id="spPts">0</b><span>Punkte ins Wochenkonto</span></div>
+    <button class="action pk" id="spSave" style="width:100%;padding:13px;margin-top:16px">Eintragen</button>
+    <p class="muted" style="margin-top:10px">Grobe Schätzung, keine Sportuhr-Genauigkeit – du schätzt die Intensität selbst ein.</p>
+  </div>`;
+  document.body.appendChild(o);
+
+  const min = o.querySelector('#spMin');
+  const ptsEl = o.querySelector('#spPts');
+  const chipEls = Array.from(o.querySelectorAll('.intensity-chip'));
+  let level = INTENSITY[1].id;
+
+  function refresh(){
+    ptsEl.textContent = sportPoints(min.value, level);
+  }
+  chipEls.forEach(ch=>{
+    ch.onclick = ()=>{
+      level = ch.dataset.lvl;
+      chipEls.forEach(c=> c.classList.toggle('active', c===ch));
+      refresh();
+    };
+  });
+  min.oninput = refresh;
+  refresh();
+
+  o.querySelector('#spSave').onclick = async ()=>{
+    const name = (o.querySelector('#spName').value||'').trim() || 'Bewegung';
+    const minutes = min.value;
+    o.remove();
+    await addSport(name, minutes, level);
+  };
+}
+
+/* ---------- Bestaetigung ---------- */
+function askConfirm(title, text, confirmLabel, cb){
+  const o = document.createElement('div');
+  o.className = 'overlay';
+  o.onclick = (ev)=>{ if(ev.target===o) o.remove(); };
+  o.innerHTML = `<div class="sheet">
+    <div class="grip"></div>
+    <h3>${esc(title)}</h3>
+    <p class="muted" style="margin:0 0 18px">${esc(text)}</p>
+    <div class="row">
+      <button class="action ghost" id="cfNo" style="flex:1;padding:12px">Abbrechen</button>
+      <button class="action" id="cfYes" style="flex:1;padding:12px;background:var(--warn)">${esc(confirmLabel)}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+  o.querySelector('#cfNo').onclick = ()=> o.remove();
+  o.querySelector('#cfYes').onclick = ()=>{ o.remove(); cb(); };
 }
 
 /* ---------- Eingabe-Sheet ---------- */
@@ -1238,7 +1748,11 @@ async function searchOFF(){
 
 /* ---------- Start ---------- */
 document.querySelectorAll('.tab').forEach(t=>{
-  t.onclick = ()=>{ activeTab = t.dataset.tab; render(); };
+  t.onclick = async ()=>{
+    activeTab = t.dataset.tab;
+    render();
+    if(activeTab==='house' && !state.house){ await loadHouse(); render(); }
+  };
 });
 document.getElementById('people').onclick = async (e)=>{
   const btn = e.target.closest('[data-person]');
