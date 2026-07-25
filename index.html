@@ -540,8 +540,55 @@ function domainFromLink(url){
 function getRecipeSteps(recipe){
   return (recipe.steps||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/^\d+[\.\)]\s*/,''));
 }
-function renderStepsHtml(recipe){
-  const steps = getRecipeSteps(recipe);
+function ingredientMatchEntries(recipe, factor){
+  return (recipe.ingredients||'').split('\n').map(l=>parseIngredientLine(l)).filter(Boolean)
+    .filter(l=>!l.header && l.amount!=null)
+    .map(l=>{
+      const parts = l.rest.trim().split(/\s+/);
+      let unit = '';
+      let nameParts = parts;
+      if(parts.length>1 && UNITS.includes(parts[0].toLowerCase())){
+        unit = parts[0];
+        nameParts = parts.slice(1);
+      }
+      const name = nameParts.join(' ');
+      const firstWord = (name.split(/[\s,]+/)[0] || name).replace(/[.,;]/g,'');
+      const stem = firstWord.length > 5 ? firstWord.slice(0, firstWord.length-2) : firstWord;
+      const scaledAmount = formatScaled(l.amount * factor);
+      const scaledText = unit ? `${scaledAmount} ${unit}` : `${scaledAmount}×`;
+      return { stem, scaledText, used:false };
+    })
+    .filter(e => e.stem && e.stem.length >= 3);
+}
+function annotateStepsWithQuantities(recipe, factor){
+  const entries = ingredientMatchEntries(recipe, factor);
+  return getRecipeSteps(recipe).map(step=>{
+    const consumedRanges = [];
+    const insertions = [];
+    for(const entry of entries){
+      if(entry.used) continue;
+      const escaped = entry.stem.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const re = new RegExp('(^|[^a-zA-ZäöüÄÖÜß])(' + escaped + '[a-zA-ZäöüÄÖÜß]*)', 'i');
+      const m = step.match(re);
+      if(!m) continue;
+      const start = m.index + m[1].length;
+      const end = m.index + m[0].length;
+      const overlaps = consumedRanges.some(([s,e]) => start < e && end > s);
+      if(overlaps) continue;
+      entry.used = true;
+      consumedRanges.push([start, end]);
+      const before = step.slice(Math.max(0, start-15), start);
+      if(/\d/.test(before)) continue; // Menge steht schon im Text davor
+      insertions.push({ pos: end, text: ` (${entry.scaledText})` });
+    }
+    insertions.sort((a,b)=> b.pos - a.pos);
+    let text = step;
+    insertions.forEach(ins=>{ text = text.slice(0, ins.pos) + ins.text + text.slice(ins.pos); });
+    return text;
+  });
+}
+function renderStepsHtml(recipe, factor){
+  const steps = annotateStepsWithQuantities(recipe, factor==null?1:factor);
   if(!steps.length) return '<p class="muted">–</p>';
   return '<ol style="padding-left:20px;margin:4px 0">' + steps.map(s=>`<li style="margin-bottom:6px">${esc(s)}</li>`).join('') + '</ol>';
 }
@@ -564,12 +611,15 @@ let cookTimer = { interval:null, remaining:0, running:false };
 function cookOverlayHtml(){
   const r = state.recipes.find(x=>x.id===cookState.recipeId);
   if(!r) return '';
-  const steps = getRecipeSteps(r);
-  const total = steps.length;
+  const base = r.servings || 4;
+  const factor = (servingOverrides[r.id] || base) / base;
+  const rawSteps = getRecipeSteps(r);
+  const annotatedSteps = annotateStepsWithQuantities(r, factor);
+  const total = rawSteps.length;
   const idx = cookState.step;
 
-  const stepText = steps[idx-1];
-  const timerSec = extractTimerSeconds(stepText);
+  const stepText = annotatedSteps[idx-1];
+  const timerSec = extractTimerSeconds(rawSteps[idx-1]);
   const timerHtml = timerSec ? `<div class="cook-timer-box">
       <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(timerSec)}</div>
       <button class="action" id="cookTimerBtn">Timer starten</button>
@@ -663,7 +713,7 @@ function toggleCookTimer(totalSeconds){
   }
 }
 
-const UNITS = ['g','kg','ml','l','tl','el','stk','stück','prise','prisen','bund','zehe','zehen','scheibe','scheiben','dose','dosen','pkg','packung','packungen'];
+const UNITS = ['g','kg','ml','l','tl','el','stk','stück','prise','prisen','bund','zehe','zehen','scheibe','scheiben','dose','dosen','pkg','packung','packungen','päckchen'];
 function parseAmountUnitName(line){
   const t = (line||'').trim();
   const m = t.match(/^([\d]+(?:[.,]\d+)?)\s*([a-zA-ZäöüÄÖÜß]*)\s*(.*)$/);
@@ -848,7 +898,7 @@ function exportRecipesPdf(recipeId){
     <h4>Zutaten</h4>
     ${printIngredientsHtml(r,1)}
     <h4>Zubereitung</h4>
-    ${renderStepsHtml(r)}
+    ${renderStepsHtml(r, 1)}
     <div class="print-footer">Happy Cornelius</div>
   </div>`;
   window.print();
@@ -929,7 +979,7 @@ function viewRecipes(){
           <button class="action small" data-cook="${r.id}" ${getRecipeSteps(r).length?'':'disabled'}>🍳 Kochen starten</button>
         </div>
         <h4 style="margin-top:14px">Zubereitung</h4>
-        ${renderStepsHtml(r)}
+        ${renderStepsHtml(r, factor)}
       </div>
     </div>`;
   }).join('');
