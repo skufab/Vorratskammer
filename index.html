@@ -258,13 +258,6 @@
   }
   .cook-step-title{font-family:'Fraunces',serif;font-weight:600;font-size:1.3rem;margin:0 0 12px;color:var(--ink);}
   .cook-step-text{font-size:1.02rem;line-height:1.55;color:var(--ink);flex-grow:1;}
-  .cook-ing-group{font-weight:700;color:var(--recipes);margin:10px 0 4px;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
-  .cook-ing-group:first-child{margin-top:0;}
-  .cook-ing-list{list-style:none;margin:0;padding:0;}
-  .cook-ing-list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.95rem;}
-  .cook-ing-list li:last-child{border-bottom:none;}
-  .cook-ing-list li.checked span{text-decoration:line-through;color:var(--ink-soft);}
-  .cook-ing-list li input{margin-top:3px;width:16px;height:16px;accent-color:var(--week);flex:none;}
   .cook-timer-box{margin-top:16px;padding:14px;border:1.5px dashed var(--recipes);border-radius:12px;text-align:center;}
   .cook-timer-display{font-family:'Inter',sans-serif;font-size:2rem;font-weight:700;color:var(--ink);margin-bottom:8px;}
   .cook-nav{width:100%;max-width:480px;display:flex;gap:10px;margin-top:18px;flex:none;}
@@ -565,54 +558,29 @@ function formatCookTime(sec){
 }
 
 /* ---------- Kochmodus ---------- */
-let cookState = { recipeId:null, step:0 };
-let cookChecked = {};
+let cookState = { recipeId:null, step:1 };
 let cookTimer = { interval:null, remaining:0, running:false };
 
 function cookOverlayHtml(){
   const r = state.recipes.find(x=>x.id===cookState.recipeId);
   if(!r) return '';
-  const base = r.servings || 4;
-  const factor = (servingOverrides[r.id] || base) / base;
   const steps = getRecipeSteps(r);
-  const total = steps.length + 1;
+  const total = steps.length;
   const idx = cookState.step;
 
-  let bodyHtml;
-  if(idx === 0){
-    const lines = (r.ingredients||'').split('\n').map(l=>parseIngredientLine(l)).filter(Boolean);
-    let listHtml = '';
-    let inList = false;
-    lines.forEach((l,i)=>{
-      if(l.header){
-        if(inList){ listHtml += '</ul>'; inList=false; }
-        listHtml += `<div class="cook-ing-group">${esc(l.text)}</div>`;
-      } else {
-        if(!inList){ listHtml += '<ul class="cook-ing-list">'; inList=true; }
-        const amountStr = l.amount!=null ? formatScaled(l.amount*factor)+' ' : '';
-        listHtml += `<li class="${cookChecked[i]?'checked':''}"><input type="checkbox" data-cookcheck="${i}" ${cookChecked[i]?'checked':''}><span>${esc(amountStr)}${esc(l.rest)}</span></li>`;
-      }
-    });
-    if(inList) listHtml += '</ul>';
-    bodyHtml = `
-      <div class="cook-step-badge">🧺</div>
-      <h2 class="cook-step-title">Zutaten</h2>
-      <div class="cook-step-text">${listHtml || '<p class="muted">Keine Zutaten hinterlegt.</p>'}</div>`;
-  } else {
-    const stepText = steps[idx-1];
-    const timerSec = extractTimerSeconds(stepText);
-    const timerHtml = timerSec ? `<div class="cook-timer-box">
-        <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(timerSec)}</div>
-        <button class="action" id="cookTimerBtn">Timer starten</button>
-      </div>` : '';
-    bodyHtml = `
-      <div class="cook-step-badge">${idx}/${steps.length}</div>
-      <h2 class="cook-step-title">Schritt ${idx}</h2>
-      <div class="cook-step-text">${esc(stepText)}</div>
-      ${timerHtml}`;
-  }
+  const stepText = steps[idx-1];
+  const timerSec = extractTimerSeconds(stepText);
+  const timerHtml = timerSec ? `<div class="cook-timer-box">
+      <div class="cook-timer-display" id="cookTimerDisplay">${formatCookTime(timerSec)}</div>
+      <button class="action" id="cookTimerBtn">Timer starten</button>
+    </div>` : '';
+  const bodyHtml = `
+    <div class="cook-step-badge">${idx}/${total}</div>
+    <h2 class="cook-step-title">Schritt ${idx}</h2>
+    <div class="cook-step-text">${esc(stepText)}</div>
+    ${timerHtml}`;
 
-  const dots = Array.from({length: total}).map((_,i)=>`<div class="cook-dot ${i===idx?'active':''}"></div>`).join('');
+  const dots = Array.from({length: total}).map((_,i)=>`<div class="cook-dot ${i===idx-1?'active':''}"></div>`).join('');
 
   return `<div class="modal-bg cook-bg" id="cookBg">
     <div class="cook-top">
@@ -622,14 +590,13 @@ function cookOverlayHtml(){
     </div>
     <div class="cook-card">${bodyHtml}</div>
     <div class="cook-nav">
-      <button class="action ghost" id="cookPrev" ${idx===0?'disabled':''}>Zurück</button>
-      <button class="action" id="cookNext">${idx===total-1?'Fertig':'Weiter'}</button>
+      <button class="action ghost" id="cookPrev" ${idx===1?'disabled':''}>Zurück</button>
+      <button class="action" id="cookNext">${idx===total?'Fertig':'Weiter'}</button>
     </div>
   </div>`;
 }
 function openCookMode(recipeId){
-  cookState = { recipeId, step:0 };
-  cookChecked = {};
+  cookState = { recipeId, step:1 };
   clearInterval(cookTimer.interval);
   cookTimer = { interval:null, remaining:0, running:false };
   const wrap = document.createElement('div');
@@ -656,12 +623,12 @@ function bindCookEvents(){
   const closeBtn = document.getElementById('cookClose');
   if(closeBtn) closeBtn.onclick = closeCookMode;
   const prevBtn = document.getElementById('cookPrev');
-  if(prevBtn) prevBtn.onclick = ()=>{ if(cookState.step>0){ cookState.step--; renderCookMode(); } };
+  if(prevBtn) prevBtn.onclick = ()=>{ if(cookState.step>1){ cookState.step--; renderCookMode(); } };
   const nextBtn = document.getElementById('cookNext');
   if(nextBtn) nextBtn.onclick = ()=>{
     const r = state.recipes.find(x=>x.id===cookState.recipeId);
-    const total = getRecipeSteps(r).length + 1;
-    if(cookState.step >= total-1){ closeCookMode(); return; }
+    const total = getRecipeSteps(r).length;
+    if(cookState.step >= total){ closeCookMode(); return; }
     cookState.step++; renderCookMode();
   };
   const timerBtn = document.getElementById('cookTimerBtn');
@@ -671,13 +638,6 @@ function bindCookEvents(){
     const sec = extractTimerSeconds(steps[cookState.step-1]);
     timerBtn.onclick = ()=> toggleCookTimer(sec);
   }
-  document.querySelectorAll('#cookBg [data-cookcheck]').forEach(cb=>{
-    cb.onchange = ()=>{
-      const i = cb.dataset.cookcheck;
-      cookChecked[i] = cb.checked;
-      cb.closest('li').classList.toggle('checked', cb.checked);
-    };
-  });
 }
 function toggleCookTimer(totalSeconds){
   const btn = document.getElementById('cookTimerBtn');
