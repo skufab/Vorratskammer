@@ -241,7 +241,11 @@
 const SUPABASE_URL = 'https://wqmdjrczvirpmpcyavvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxbWRqcmN6dmlycG1wY3lhdnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2Mzg5NDgsImV4cCI6MjA5OTIxNDk0OH0.jKm3LYqLZoJfvLPKsFm2_L0x94Yfim6f96vqFYnz7K0';
 
-const PEOPLE = ['Fabian','Elena','Mama'];
+const PEOPLE = [
+  {id:'fabian', name:'Fabian'},
+  {id:'elena',  name:'Elena'},
+  {id:'mama',   name:'Oma Gigi'}   // Kennung bleibt 'mama', damit alte Einträge erhalten bleiben
+];
 const MEALS = [
   {key:'breakfast', label:'Frühstück'},
   {key:'lunch',     label:'Mittagessen'},
@@ -250,7 +254,16 @@ const MEALS = [
 ];
 const DEFAULT_BUDGET = 23;
 
-let person = localStorage.getItem('pk_person') || 'Fabian';
+let person = (function(){
+  const stored = (localStorage.getItem('pk_person') || '').toLowerCase();
+  // frühere Versionen haben den Anzeigenamen gespeichert – hier auf die Kennung umstellen
+  const hit = PEOPLE.find(p=> p.id===stored || p.name.toLowerCase()===stored);
+  return hit ? hit.id : 'fabian';
+})();
+function personName(){
+  const p = PEOPLE.find(x=> x.id===person);
+  return p ? p.name : person;
+}
 let activeTab = 'today';
 let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[] };
 let sheet = null;
@@ -292,10 +305,9 @@ async function saveKey(key, value, quiet){
     showToast('Speichern fehlgeschlagen – bitte Verbindung prüfen', true);
   }
 }
-function slug(name){ return name.toLowerCase().replace(/[^a-z]/g,''); }
-function dayKey(){ return 'punkte:' + slug(person) + ':day:' + todayIso; }
-function weightKey(){ return 'punkte:' + slug(person) + ':weight'; }
-function profileKey(){ return 'punkte:' + slug(person) + ':profile'; }
+function dayKey(){ return 'punkte:' + person + ':day:' + todayIso; }
+function weightKey(){ return 'punkte:' + person + ':weight'; }
+function profileKey(){ return 'punkte:' + person + ':profile'; }
 
 let toastTimer = null;
 function showToast(msg, isError){
@@ -409,7 +421,7 @@ async function setBudget(v){
 /* ---------- Rendering ---------- */
 function renderPeople(){
   document.getElementById('people').innerHTML = PEOPLE.map(p=>
-    `<button class="person ${p===person?'active':''}" data-person="${esc(p)}">${esc(p)}</button>`
+    `<button class="person ${p.id===person?'active':''}" data-person="${esc(p.id)}">${esc(p.name)}</button>`
   ).join('');
 }
 
@@ -483,7 +495,7 @@ function viewToday(){
 
 function viewWeight(){
   const list = state.weight.slice(-14);
-  let html = `<h2 class="section-title">Gewicht – ${esc(person)}</h2>`;
+  let html = `<h2 class="section-title">Gewicht – ${esc(personName())}</h2>`;
   html += `<div class="row" style="margin-bottom:14px">
     <input type="number" step="0.1" id="wInput" placeholder="z. B. 81,4" style="flex:1">
     <button class="action" id="wSave" style="flex:none">Eintragen</button>
@@ -539,7 +551,7 @@ function viewProfile(){
   }
   tpl += `<p class="muted" style="margin-top:10px">Vorlagen gelten für alle drei – wer eine anlegt, stellt sie den anderen mit zur Verfügung.</p>`;
 
-  return `<h2 class="section-title">Profil – ${esc(person)}</h2>
+  return `<h2 class="section-title">Profil – ${esc(personName())}</h2>
     <div class="field">
       <label>Tagesbudget in Punkten</label>
       <div class="row">
