@@ -105,7 +105,7 @@
   }
   .muted{color:var(--ink-soft);font-size:0.88rem;}
 
-  button.action{
+  button.action, a.action{
     font-family:'Inter',sans-serif;
     font-weight:600;
     font-size:0.85rem;
@@ -116,12 +116,12 @@
     background:var(--ink);
     color:#fff;
   }
-  button.ghost{
+  button.ghost, a.ghost{
     background:transparent;
     color:var(--ink-soft);
     border:1px solid var(--line);
   }
-  button.small{padding:5px 10px;font-size:0.78rem;}
+  button.small, a.small{padding:5px 10px;font-size:0.78rem;}
   input,textarea,select{
     font-family:'Inter',sans-serif;
     font-size:0.9rem;
@@ -383,7 +383,10 @@
     <h1>Happy Cornelius</h1>
     <p class="muted">Rezepte, Wochenplan, Einkauf, Putzplan, Packlisten &amp; Projekte – an einem Ort, geteilt fürs ganze Haus.</p>
     <div class="divider">✦ ✦ ✦</div>
-    <button class="action ghost small" id="backupBtn" style="margin-top:10px">⇅ Datensicherung</button>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <button class="action ghost small" id="backupBtn">⇅ Datensicherung</button>
+      <a class="action ghost small" href="punkte.html" style="text-decoration:none;display:inline-block">◍ Punktekonto</a>
+    </div>
   </header>
   <div class="tabs">
     <button class="tab" data-tab="recipes">Rezepte</button>
