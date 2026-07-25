@@ -242,10 +242,11 @@ const SUPABASE_URL = 'https://wqmdjrczvirpmpcyavvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxbWRqcmN6dmlycG1wY3lhdnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2Mzg5NDgsImV4cCI6MjA5OTIxNDk0OH0.jKm3LYqLZoJfvLPKsFm2_L0x94Yfim6f96vqFYnz7K0';
 
 const PEOPLE = [
-  {id:'fabian', name:'Fabian'},
-  {id:'elena',  name:'Elena'},
-  {id:'mama',   name:'Oma Gigi'}   // Kennung bleibt 'mama', damit alte Einträge erhalten bleiben
+  {id:'fabian', name:'Fabian',   recipes:true},
+  {id:'elena',  name:'Elena',    recipes:true},
+  {id:'mama',   name:'Oma Gigi', recipes:false}  // Kennung bleibt 'mama', damit alte Einträge erhalten bleiben
 ];
+const RECENT_MAX = 20;
 const MEALS = [
   {key:'breakfast', label:'Frühstück'},
   {key:'lunch',     label:'Mittagessen'},
@@ -264,8 +265,23 @@ function personName(){
   const p = PEOPLE.find(x=> x.id===person);
   return p ? p.name : person;
 }
+/* Nur Fabian und Elena sehen die Rezepte aus Happy Cornelius. */
+function hasRecipes(){
+  const p = PEOPLE.find(x=> x.id===person);
+  return !!(p && p.recipes);
+}
+/* Vorlagen: Fabian und Elena teilen sich ihre, Oma Gigi sieht nur eigene. */
+function visibleTemplates(){
+  return state.templates.filter(t=>{
+    if(!t) return false;
+    const owner = t.owner || 'fabian';           // Vorlagen ohne Besitzer gelten als gemeinsam
+    const ownerShares = PEOPLE.find(x=> x.id===owner);
+    if(hasRecipes()) return !!(ownerShares && ownerShares.recipes);
+    return owner === person;
+  });
+}
 let activeTab = 'today';
-let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[] };
+let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[] };
 let sheet = null;
 
 /* ---------- Datum ---------- */
@@ -308,6 +324,7 @@ async function saveKey(key, value, quiet){
 function dayKey(){ return 'punkte:' + person + ':day:' + todayIso; }
 function weightKey(){ return 'punkte:' + person + ':weight'; }
 function profileKey(){ return 'punkte:' + person + ':profile'; }
+function recentKey(){ return 'punkte:' + person + ':recent'; }
 
 let toastTimer = null;
 function showToast(msg, isError){
@@ -345,6 +362,7 @@ async function loadPersonData(){
   state.day     = await loadKey(dayKey(), {entries:[]});
   state.weight  = await loadKey(weightKey(), []);
   state.profile = await loadKey(profileKey(), {budget:DEFAULT_BUDGET});
+  state.recent  = await loadKey(recentKey(), []);
   if(!state.day.entries) state.day.entries = [];
 }
 const TEMPLATES_KEY = 'punkte:vorlagen';
@@ -358,6 +376,19 @@ async function addEntry(entry){
   await saveKey(dayKey(), state.day);
   render();
 }
+async function pushRecent(item){
+  if(!item || !item.name) return;
+  state.recent = state.recent.filter(r=> r.name !== item.name);
+  state.recent.unshift(item);
+  if(state.recent.length > RECENT_MAX) state.recent = state.recent.slice(0, RECENT_MAX);
+  await saveKey(recentKey(), state.recent, true);
+}
+async function clearRecent(){
+  state.recent = [];
+  await saveKey(recentKey(), state.recent);
+  render();
+}
+
 async function addEntries(list){
   list.forEach(e=> state.day.entries.push(Object.assign({id:uid()}, e)));
   await saveKey(dayKey(), state.day);
@@ -370,7 +401,7 @@ async function saveTemplate(name, mealKey){
     grams:e.grams||null, recipeId:e.recipeId||null, portions:e.portions||null
   }));
   if(!items.length){ showToast('Für diese Mahlzeit ist nichts erfasst', true); return; }
-  state.templates.push({id:uid(), name:name, meal:mealKey, items:items});
+  state.templates.push({id:uid(), name:name, meal:mealKey, owner:person, items:items});
   await saveKey(TEMPLATES_KEY, state.templates);
   showToast('Vorlage „' + name + '" gespeichert ✓');
   render();
@@ -534,8 +565,9 @@ function viewWeight(){
 function viewProfile(){
   const budget = state.profile.budget || DEFAULT_BUDGET;
   let tpl = `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Gespeicherte Mahlzeiten</h3>`;
-  if(state.templates.length){
-    tpl += `<ul class="items">` + state.templates.map(t=>{
+  const mine = visibleTemplates();
+  if(mine.length){
+    tpl += `<ul class="items">` + mine.map(t=>{
       const label = (MEALS.find(m=>m.key===t.meal)||{}).label || '';
       return `<li>
         <div class="it-txt">
@@ -549,7 +581,17 @@ function viewProfile(){
   } else {
     tpl += `<p class="muted">Noch keine Vorlagen. Erfasse eine Mahlzeit und tippe darunter auf „☆ Als Vorlage".</p>`;
   }
-  tpl += `<p class="muted" style="margin-top:10px">Vorlagen gelten für alle drei – wer eine anlegt, stellt sie den anderen mit zur Verfügung.</p>`;
+  tpl += hasRecipes()
+    ? `<p class="muted" style="margin-top:10px">Fabian und Elena teilen sich ihre Vorlagen. Oma Gigi sieht nur ihre eigenen.</p>`
+    : `<p class="muted" style="margin-top:10px">Diese Mahlzeiten sind nur für dich – die anderen sehen sie nicht.</p>`;
+
+  tpl += `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Zuletzt verwendet</h3>`;
+  if((state.recent||[]).length){
+    tpl += `<p class="muted">${state.recent.length} gespeicherte Einträge, maximal ${RECENT_MAX}.</p>
+      <button class="action ghost small" id="recClear" style="margin-top:8px">Liste leeren</button>`;
+  } else {
+    tpl += `<p class="muted">Noch nichts erfasst.</p>`;
+  }
 
   return `<h2 class="section-title">Profil – ${esc(personName())}</h2>
     <div class="field">
@@ -607,6 +649,8 @@ function bind(){
   if(ws) ws.onclick = ()=> addWeight(document.getElementById('wInput').value);
   const bs = document.getElementById('bSave');
   if(bs) bs.onclick = ()=> setBudget(document.getElementById('bInput').value);
+  const rc = document.getElementById('recClear');
+  if(rc) rc.onclick = clearRecent;
 }
 
 /* ---------- Namensdialog ---------- */
@@ -659,10 +703,18 @@ function recipeHits(){
   ).slice(0,12);
 }
 
+/* Zuletzt verwendete Produkte filtern */
+function recentHits(){
+  const q = (sheet.query||'').trim().toLowerCase();
+  let list = (state.recent||[]).filter(r=> r && r.name);
+  if(q) list = list.filter(r=> r.name.toLowerCase().includes(q));
+  return list.slice(0, RECENT_MAX);
+}
+
 /* Vorlagen filtern: passende Mahlzeit zuerst, Suchbegriff beruecksichtigen */
 function templateHits(){
   const q = (sheet.query||'').trim().toLowerCase();
-  let list = state.templates.filter(t=> t && t.name);
+  let list = visibleTemplates().filter(t=> t && t.name);
   if(q) list = list.filter(t=> t.name.toLowerCase().includes(q));
   // Vorlagen der aktuellen Mahlzeit nach oben
   return list.sort((a,b)=>{
@@ -697,6 +749,10 @@ function recipeSelect(){
 
 /* Nährwerte je nach Quelle: Rezept rechnet in Portionen, Produkt in Gramm */
 function nutrientsFor(picked, amount){
+  if(picked.kind==='fixed'){
+    const f = Number(amount)||0;
+    return {kcal:(picked.kcal||0)*f, protein:(picked.protein||0)*f, fatSat:0, sugar:0, fiber:0};
+  }
   if(picked.kind==='recipe'){
     const f = Number(amount)||0;
     return {
@@ -720,43 +776,19 @@ function renderSheet(){
   let inner = `<div class="grip"></div>`;
 
   if(!sheet.picked){
-    const hits = recipeHits();
+    const withRecipes = hasRecipes();
     inner += `<h3>${esc(label)} – was gab es?</h3>
-      <input id="q" placeholder="Rezept oder Lebensmittel suchen" value="${esc(sheet.query||'')}" autocomplete="off">
-      <div class="field" style="margin:10px 0 0">
-        <label>Oder direkt aus der Rezeptliste</label>
-        ${recipeSelect()}
+      <input id="q" placeholder="${withRecipes?'Rezept oder Lebensmittel suchen':'Lebensmittel suchen'}" value="${esc(sheet.query||'')}" autocomplete="off">
+      <div class="row" style="margin-top:10px;flex-wrap:wrap">
+        <button class="action pk small" id="offBtn" ${sheet.loading||!(sheet.query||'').trim()?'disabled':''}>
+          ${sheet.loading?'Sucht…':'In der Datenbank suchen'}
+        </button>
+        <button class="action ghost small" id="scanBtn">📷 Barcode scannen</button>
       </div>`;
 
-    const tpls = templateHits();
-    if(tpls.length){
-      inner += `<div class="grouphead">Gespeicherte Mahlzeiten</div>`;
-      inner += `<ul class="results">` + tpls.map(t=>
-        `<li><button data-tpl="${esc(t.id)}">
-          <span class="r-name">☆ ${esc(t.name)}</span>
-          <span class="r-meta">${t.items.length} Positionen · ${templatePoints(t)} Punkte</span>
-        </button></li>`
-      ).join('') + `</ul>`;
-    }
-
-    inner += `<div class="grouphead">Aus euren Rezepten</div>`;
-    if(hits.length){
-      inner += `<ul class="results">` + hits.map(r=>{
-        const meta = [];
-        if(r.calories) meta.push(r.calories+' kcal');
-        if(r.protein)  meta.push(r.protein+' g P');
-        meta.push('pro Portion');
-        return `<li><button data-recipe="${esc(r.id)}">
-          <span class="r-name">📖 ${esc(r.title)}${(!r.calories&&!r.protein)?' ⚠️':''}</span>
-          <span class="r-meta">${esc(meta.join(' · '))}</span>
-        </button></li>`;
-      }).join('') + `</ul>`;
-    } else {
-      inner += `<p class="muted" style="margin:8px 0 0">Kein Rezept passt dazu.</p>`;
-    }
-
-    inner += `<div class="grouphead">Lebensmittelverzeichnis</div>`;
+    /* Treffer aus dem Verzeichnis stehen direkt unter der Suche */
     if(sheet.off.length){
+      inner += `<div class="grouphead">Gefundene Produkte</div>`;
       inner += `<ul class="results">` + sheet.off.map((r,i)=>
         `<li><button data-off="${i}">
           <span class="r-name">${esc(r.name)}</span>
@@ -765,16 +797,60 @@ function renderSheet(){
       ).join('') + `</ul>`;
     }
     if(sheet.error) inner += `<p class="muted" style="color:var(--warn);margin:8px 0 0">${esc(sheet.error)}</p>`;
-    if(!sheet.off.length && !sheet.error && !sheet.loading){
-      inner += `<p class="muted" style="margin:8px 0 0">Für verpackte Produkte in der Open-Food-Facts-Datenbank nachschlagen.</p>`;
+
+    /* Zuletzt verwendet – für Oma Gigi der wichtigste Block, daher weit oben */
+    const rec = recentHits();
+    if(rec.length){
+      inner += `<div class="grouphead">Zuletzt verwendet</div>`;
+      inner += `<ul class="results">` + rec.map((r,i)=>{
+        const meta = r.kind==='off'
+          ? Math.round(r.per100.kcal)+' kcal / 100 g'
+          : Math.round(r.kcal||0)+' kcal';
+        return `<li><button data-recent="${i}">
+          <span class="r-name">↻ ${esc(r.name)}</span>
+          <span class="r-meta">${esc(meta)}</span>
+        </button></li>`;
+      }).join('') + `</ul>`;
+    } else if(!withRecipes){
+      inner += `<div class="grouphead">Zuletzt verwendet</div>
+        <p class="muted" style="margin:8px 0 0">Hier sammeln sich die Sachen, die du eingetragen hast – dann brauchst du sie nicht jedes Mal neu zu suchen.</p>`;
     }
-    inner += `<div class="row" style="margin-top:12px;flex-wrap:wrap">
-      <button class="action pk small" id="offBtn" ${sheet.loading||!(sheet.query||'').trim()?'disabled':''}>
-        ${sheet.loading?'Sucht…':'In der Datenbank suchen'}
-      </button>
-      <button class="action ghost small" id="scanBtn">📷 Barcode</button>
-      <button class="action ghost small" id="freeBtn">Eigener Eintrag</button>
-    </div>`;
+
+    /* Rezepte nur für Fabian und Elena */
+    if(withRecipes){
+      const hits = recipeHits();
+      inner += `<div class="grouphead">Aus euren Rezepten</div>
+        <div class="field" style="margin:8px 0 0">${recipeSelect()}</div>`;
+      if(hits.length){
+        inner += `<ul class="results">` + hits.map(r=>{
+          const meta = [];
+          if(r.calories) meta.push(r.calories+' kcal');
+          if(r.protein)  meta.push(r.protein+' g P');
+          meta.push('pro Portion');
+          return `<li><button data-recipe="${esc(r.id)}">
+            <span class="r-name">📖 ${esc(r.title)}${(!r.calories&&!r.protein)?' ⚠️':''}</span>
+            <span class="r-meta">${esc(meta.join(' · '))}</span>
+          </button></li>`;
+        }).join('') + `</ul>`;
+      } else {
+        inner += `<p class="muted" style="margin:8px 0 0">Kein Rezept passt dazu.</p>`;
+      }
+    }
+
+    /* Eigene Mahlzeiten und Freitext ganz unten */
+    const tpls = templateHits();
+    inner += `<div class="grouphead">${withRecipes?'Gespeicherte Mahlzeiten':'Deine Mahlzeiten'}</div>`;
+    if(tpls.length){
+      inner += `<ul class="results">` + tpls.map(t=>
+        `<li><button data-tpl="${esc(t.id)}">
+          <span class="r-name">☆ ${esc(t.name)}</span>
+          <span class="r-meta">${t.items.length} Positionen · ${templatePoints(t)} Punkte</span>
+        </button></li>`
+      ).join('') + `</ul>`;
+    } else {
+      inner += `<p class="muted" style="margin:8px 0 0">Noch keine gespeichert. Trag eine Mahlzeit ein und tippe darunter auf „☆ Als Vorlage".</p>`;
+    }
+    inner += `<button class="action ghost small" id="freeBtn" style="margin-top:12px">Eigener Eintrag</button>`;
 
   } else if(sheet.picked === 'scan'){
     inner += `<h3>Barcode scannen</h3>
@@ -791,14 +867,16 @@ function renderSheet(){
       <button class="action ghost small" id="backBtn" style="margin-top:10px">← Zurück</button>`;
 
   } else {
-    const isRecipe = sheet.picked.kind==='recipe';
+    const kind = sheet.picked.kind;
     const n = nutrientsFor(sheet.picked, sheet.amount);
-    const name = isRecipe ? sheet.picked.recipe.title : sheet.picked.name;
+    const name = kind==='recipe' ? sheet.picked.recipe.title : sheet.picked.name;
+    const unitLabel = kind==='off' ? 'Menge in Gramm' : (kind==='recipe' ? 'Portionen' : 'Anzahl');
+    const icon = kind==='recipe' ? '📖 ' : '';
     inner += `<button class="action ghost small" id="backBtn" style="margin-bottom:10px">← Andere Auswahl</button>
-      <h3>${isRecipe?'📖 ':''}${esc(name)}</h3>
+      <h3>${icon}${esc(name)}</h3>
       <div class="field">
-        <label>${isRecipe?'Portionen':'Menge in Gramm'}</label>
-        <input id="aInput" type="number" min="${isRecipe?'0.5':'1'}" step="${isRecipe?'0.5':'10'}" value="${sheet.amount}">
+        <label>${unitLabel}</label>
+        <input id="aInput" type="number" min="${kind==='off'?'1':'0.5'}" step="${kind==='off'?'10':'0.5'}" value="${sheet.amount}">
       </div>
       <div class="preview"><b>${points(n)}</b><span>Punkte</span></div>
       <p class="muted" id="aSub" style="text-align:center;margin:8px 0 0">
@@ -850,6 +928,21 @@ function bindSheet(){
     };
   });
 
+  document.querySelectorAll('[data-recent]').forEach(el=>{
+    el.onclick = ()=>{
+      const r = recentHits()[Number(el.dataset.recent)];
+      if(!r) return;
+      if(r.kind==='off'){
+        sheet.picked = {kind:'off', name:r.name, brand:r.brand||'', per100:r.per100};
+        sheet.amount = r.amount || 100;
+      } else {
+        sheet.picked = {kind:'fixed', name:r.name, kcal:r.kcal||0, protein:r.protein||0};
+        sheet.amount = 1;
+      }
+      renderSheet();
+    };
+  });
+
   const scanBtn = document.getElementById('scanBtn');
   if(scanBtn) scanBtn.onclick = ()=>{ sheet.picked = 'scan'; sheet.scanMsg = 'Kamera wird gestartet…'; renderSheet(); startScanner(); };
   const scanStop = document.getElementById('scanStop');
@@ -879,16 +972,25 @@ function bindSheet(){
 
   const save = document.getElementById('saveBtn');
   if(save) save.onclick = async ()=>{
-    const isRecipe = sheet.picked.kind==='recipe';
-    const n = nutrientsFor(sheet.picked, sheet.amount);
+    const picked = sheet.picked;
+    const kind = picked.kind;
+    const amount = sheet.amount;
+    const n = nutrientsFor(picked, amount);
     const entry = Object.assign({
       meal: sheet.meal,
-      name: isRecipe ? sheet.picked.recipe.title : sheet.picked.name
+      name: kind==='recipe' ? picked.recipe.title : picked.name
     }, n);
-    if(isRecipe){ entry.recipeId = sheet.picked.recipe.id; entry.portions = sheet.amount; entry.source='recipe'; }
-    else { entry.grams = sheet.amount; }
+    if(kind==='recipe'){ entry.recipeId = picked.recipe.id; entry.portions = amount; entry.source='recipe'; }
+    else if(kind==='off'){ entry.grams = amount; }
+    else { entry.count = amount; }
     closeSheet();
     await addEntry(entry);
+    // Rezepte stehen ohnehin in der Liste – nur Produkte und Eigenes in den Verlauf
+    if(kind==='off'){
+      await pushRecent({kind:'off', name:picked.name, brand:picked.brand||'', per100:picked.per100, amount:amount});
+    } else if(kind==='fixed'){
+      await pushRecent({kind:'fixed', name:picked.name, kcal:picked.kcal, protein:picked.protein});
+    }
   };
 
   const fs = document.getElementById('freeSave');
@@ -900,6 +1002,7 @@ function bindSheet(){
     const meal = sheet.meal;
     closeSheet();
     await addEntry({meal, name, kcal, protein:prot, fatSat:0, sugar:0, fiber:0});
+    await pushRecent({kind:'fixed', name:name, kcal:kcal, protein:prot});
   };
 }
 
