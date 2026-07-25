@@ -105,6 +105,16 @@
   }
   .muted{color:var(--ink-soft);font-size:0.88rem;}
 
+  .pk-badge{
+    flex:none;background:#D6E5F1;color:#2F6F9F;
+    font-family:'Inter',sans-serif;font-weight:700;font-size:0.72rem;
+    padding:3px 9px;border-radius:20px;white-space:nowrap;
+  }
+  .pk-badge.gross{font-size:0.8rem;padding:4px 12px;}
+  .tagesbilanz{
+    margin-top:6px;display:flex;align-items:center;gap:8px;
+    justify-content:space-between;flex-wrap:wrap;
+  }
   button.action, a.action{
     font-family:'Inter',sans-serif;
     font-weight:600;
@@ -690,6 +700,17 @@ function allCategories(){
   });
   return Array.from(set).sort((a,b)=>a.localeCompare(b,'de'));
 }
+/* Punkte wie im Punktekonto: kcal/33 + gesFett/9 + Zucker/9 − Protein/10 − Ballaststoffe/12.
+   Hier liegen nur Kalorien und Protein vor, die übrigen Terme sind daher null. */
+function punkte(calories, protein){
+  const p = (Number(calories)||0)/33 - (Number(protein)||0)/10;
+  return Math.max(0, Math.round(p));
+}
+function punkteBadge(calories, protein){
+  if(!Number(calories)) return '';
+  return `<span class="pk-badge">${punkte(calories, protein)} P</span>`;
+}
+
 function viewRecipes(){
   const term = recipeSearch.trim().toLowerCase();
   const list = state.recipes.filter(r=>{
@@ -720,8 +741,9 @@ function viewRecipes(){
     const factor = current / base;
     return `
     <div class="recipe-item">
-      <div data-open="${r.id}" style="cursor:pointer">
-        <h3>${esc(r.title)}</h3>
+      <div data-open="${r.id}" style="cursor:pointer;display:flex;align-items:center;gap:8px">
+        <h3 style="margin:0;flex:1">${esc(r.title)}</h3>
+        ${punkteBadge(r.calories, r.protein)}
       </div>
       <div class="row" style="flex:none;gap:6px;margin:6px 0">
         <button class="action ghost small" data-pdf="${r.id}">PDF</button>
@@ -732,7 +754,7 @@ function viewRecipes(){
       <div class="recipe-body ${openRecipeId===r.id?'open':''}">
         ${r.link?`<h4>Quelle</h4><p style="margin:2px 0 10px"><a href="${escAttr(r.link)}" target="_blank" rel="noopener" style="color:var(--recipes)">${esc(r.link)}</a></p>`:''}
         ${(r.prepTime||r.cookTime)?`<div class="muted" style="margin-bottom:8px">${[r.prepTime?('Schnibbeln '+esc(r.prepTime)):'', r.cookTime?('Zubereitung '+esc(r.cookTime)):''].filter(Boolean).join(' · ')}</div>`:''}
-        ${(r.calories||r.protein)?`<div class="muted" style="margin-bottom:8px">${r.calories?('🔥 '+r.calories+' kcal'):''}${(r.calories&&r.protein)?' · ':''}${r.protein?('💪 '+r.protein+' g Protein'):''} <span style="opacity:.7">(pro Portion, fix)</span></div>`:''}
+        ${(r.calories||r.protein)?`<div class="muted" style="margin-bottom:8px">${r.calories?('🔥 '+r.calories+' kcal'):''}${(r.calories&&r.protein)?' · ':''}${r.protein?('💪 '+r.protein+' g Protein'):''}${r.calories?(' · ◍ '+punkte(r.calories,r.protein)+' Punkte'):''} <span style="opacity:.7">(pro Portion, fix)</span></div>`:''}
         <div class="row" style="align-items:center;gap:8px;margin-bottom:8px;flex:none;max-width:220px">
           <span class="muted" style="flex:none">Portionen</span>
           <button class="action ghost small" data-servminus="${r.id}" style="flex:none">–</button>
@@ -1131,11 +1153,15 @@ function viewWeek(){
     const dinner = entry.dinner || {};
     const options = (sel)=>['<option value="">– frei –</option>']
       .concat(state.recipes.map(r=>`<option value="${r.id}" ${sel===r.id?'selected':''}>${esc(r.title)}</option>`)).join('');
-    let kcal=0, protein=0;
+    let kcal=0, protein=0, pkt=0;
     [lunch, dinner].forEach(m=>{
       if(m.recipeId){
         const r = state.recipes.find(x=>x.id===m.recipeId);
-        if(r){ kcal += Number(r.calories)||0; protein += Number(r.protein)||0; }
+        if(r){
+          kcal += Number(r.calories)||0;
+          protein += Number(r.protein)||0;
+          pkt += punkte(r.calories, r.protein);
+        }
       }
     });
     const mealBlock = (mealKey, label, meal)=>{
@@ -1146,6 +1172,7 @@ function viewWeek(){
           <button class="action ghost small" data-gorecipe="${r.id}" style="flex:none">📖 Rezept</button>
           <button class="action ghost small" data-togglecooked="${dayName}" data-meal="${mealKey}" style="flex:none">${meal.cooked?'✅ gekocht':'○ offen'}</button>
           ${(r.calories||r.protein)?`<span class="muted" style="font-size:0.74rem">${r.calories?r.calories+' kcal':''}${(r.calories&&r.protein)?' · ':''}${r.protein?r.protein+' g P':''}</span>`:''}
+          ${punkteBadge(r.calories, r.protein)}
         </div>` : ''}
         <input type="text" data-day="${dayName}" data-meal="${mealKey}" class="weekNote" placeholder="Notiz" value="${escAttr(meal.note||'')}" style="margin-top:6px">
       </div>`;
@@ -1154,7 +1181,10 @@ function viewWeek(){
       <h4>${formatDayHeader(dayDate)}</h4>
       ${mealBlock('lunch','Mittagessen',lunch)}
       ${mealBlock('dinner','Abendessen',dinner)}
-      ${(kcal||protein)?`<div class="muted" style="margin-top:6px">Tagesbilanz: ${kcal?('🔥 '+kcal+' kcal'):''}${(kcal&&protein)?' · ':''}${protein?('💪 '+protein+' g Protein'):''}</div>`:''}
+      ${(kcal||protein)?`<div class="tagesbilanz">
+        <span class="muted">Tagesbilanz: ${kcal?('🔥 '+kcal+' kcal'):''}${(kcal&&protein)?' · ':''}${protein?('💪 '+protein+' g Protein'):''}</span>
+        ${pkt?`<span class="pk-badge gross">${pkt} Punkte</span>`:''}
+      </div>`:''}
     </div>`;
   });
   return html;
