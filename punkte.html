@@ -252,7 +252,7 @@ const DEFAULT_BUDGET = 23;
 
 let person = localStorage.getItem('pk_person') || 'Fabian';
 let activeTab = 'today';
-let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[] };
+let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[] };
 let sheet = null;
 
 /* ---------- Datum ---------- */
@@ -335,8 +335,10 @@ async function loadPersonData(){
   state.profile = await loadKey(profileKey(), {budget:DEFAULT_BUDGET});
   if(!state.day.entries) state.day.entries = [];
 }
+const TEMPLATES_KEY = 'punkte:vorlagen';
 async function loadShared(){
-  state.recipes = await loadKey('recipes', []);
+  state.recipes   = await loadKey('recipes', []);
+  state.templates = await loadKey(TEMPLATES_KEY, []);
 }
 /* ---------- Aktionen ---------- */
 async function addEntry(entry){
@@ -344,6 +346,32 @@ async function addEntry(entry){
   await saveKey(dayKey(), state.day);
   render();
 }
+async function addEntries(list){
+  list.forEach(e=> state.day.entries.push(Object.assign({id:uid()}, e)));
+  await saveKey(dayKey(), state.day);
+  render();
+}
+async function saveTemplate(name, mealKey){
+  const items = state.day.entries.filter(e=>e.meal===mealKey).map(e=>({
+    name:e.name, kcal:e.kcal||0, protein:e.protein||0,
+    fatSat:e.fatSat||0, sugar:e.sugar||0, fiber:e.fiber||0,
+    grams:e.grams||null, recipeId:e.recipeId||null, portions:e.portions||null
+  }));
+  if(!items.length){ showToast('Für diese Mahlzeit ist nichts erfasst', true); return; }
+  state.templates.push({id:uid(), name:name, meal:mealKey, items:items});
+  await saveKey(TEMPLATES_KEY, state.templates);
+  showToast('Vorlage „' + name + '" gespeichert ✓');
+  render();
+}
+async function deleteTemplate(id){
+  state.templates = state.templates.filter(t=>t.id!==id);
+  await saveKey(TEMPLATES_KEY, state.templates);
+  render();
+}
+function templatePoints(t){
+  return t.items.reduce((sum,it)=> sum + points(it), 0);
+}
+
 async function removeEntry(id){
   state.day.entries = state.day.entries.filter(e=>e.id!==id);
   await saveKey(dayKey(), state.day);
@@ -444,7 +472,10 @@ function viewToday(){
         </li>`;
       }).join('') + `</ul>`;
     }
-    html += `<button class="addbtn" data-add="${m.key}">+ ${items.length?'Weiteres':'Etwas'} hinzufügen</button></div>`;
+    html += `<div class="row" style="margin-top:10px;gap:8px">
+      <button class="addbtn" data-add="${m.key}" style="margin-top:0">+ ${items.length?'Weiteres':'Etwas'} hinzufügen</button>
+      ${items.length ? `<button class="action ghost small" data-tpl-save="${m.key}" style="flex:none;white-space:nowrap">☆ Als Vorlage</button>` : ''}
+    </div></div>`;
   });
 
   return html;
@@ -490,6 +521,24 @@ function viewWeight(){
 
 function viewProfile(){
   const budget = state.profile.budget || DEFAULT_BUDGET;
+  let tpl = `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Gespeicherte Mahlzeiten</h3>`;
+  if(state.templates.length){
+    tpl += `<ul class="items">` + state.templates.map(t=>{
+      const label = (MEALS.find(m=>m.key===t.meal)||{}).label || '';
+      return `<li>
+        <div class="it-txt">
+          <span class="it-name">☆ ${esc(t.name)}</span>
+          <span class="it-meta">${esc(label)} · ${t.items.length} Positionen</span>
+        </div>
+        <span class="it-pts">${templatePoints(t)}</span>
+        <button class="del" data-tpl-del="${esc(t.id)}" aria-label="Vorlage löschen">×</button>
+      </li>`;
+    }).join('') + `</ul>`;
+  } else {
+    tpl += `<p class="muted">Noch keine Vorlagen. Erfasse eine Mahlzeit und tippe darunter auf „☆ Als Vorlage".</p>`;
+  }
+  tpl += `<p class="muted" style="margin-top:10px">Vorlagen gelten für alle drei – wer eine anlegt, stellt sie den anderen mit zur Verfügung.</p>`;
+
   return `<h2 class="section-title">Profil – ${esc(person)}</h2>
     <div class="field">
       <label>Tagesbudget in Punkten</label>
@@ -498,7 +547,8 @@ function viewProfile(){
         <button class="action" id="bSave" style="flex:none">Speichern</button>
       </div>
     </div>
-    <p class="muted" style="margin-top:18px">
+    ${tpl}
+    <p class="muted" style="margin-top:22px">
       <b>Wie die Punkte entstehen:</b><br>
       kcal ÷ 33 + gesättigte Fette ÷ 9 + Zucker ÷ 9 − Protein ÷ 10 − Ballaststoffe ÷ 12,
       gerundet und nie unter null. Bei Rezepten aus Happy Cornelius liegen nur Kalorien und
@@ -527,6 +577,16 @@ function bind(){
   document.querySelectorAll('[data-del]').forEach(el=>{
     el.onclick = ()=> removeEntry(el.dataset.del);
   });
+  document.querySelectorAll('[data-tpl-save]').forEach(el=>{
+    el.onclick = ()=>{
+      const mealKey = el.dataset.tplSave;
+      const label = (MEALS.find(m=>m.key===mealKey)||{}).label || '';
+      askName('Vorlage aus ' + label, 'z. B. Frühstückstoast', n=> saveTemplate(n, mealKey));
+    };
+  });
+  document.querySelectorAll('[data-tpl-del]').forEach(el=>{
+    el.onclick = ()=> deleteTemplate(el.dataset.tplDel);
+  });
   document.querySelectorAll('[data-portions]').forEach(el=>{
     el.onchange = ()=> setPortions(el.dataset.portions, el.value);
   });
@@ -537,12 +597,40 @@ function bind(){
   if(bs) bs.onclick = ()=> setBudget(document.getElementById('bInput').value);
 }
 
+/* ---------- Namensdialog ---------- */
+function askName(title, placeholder, cb){
+  const o = document.createElement('div');
+  o.className = 'overlay';
+  o.onclick = (ev)=>{ if(ev.target===o) o.remove(); };
+  o.innerHTML = `<div class="sheet">
+    <div class="grip"></div>
+    <h3>${esc(title)}</h3>
+    <div class="field"><input id="nameIn" placeholder="${esc(placeholder)}" autocomplete="off"></div>
+    <div class="row">
+      <button class="action pk" id="nameOk" style="flex:1;padding:12px">Speichern</button>
+      <button class="action ghost" id="nameNo" style="flex:none;padding:12px">Abbrechen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+  const inp = o.querySelector('#nameIn');
+  inp.focus();
+  const done = ()=>{
+    const v = (inp.value||'').trim();
+    if(!v){ showToast('Bitte einen Namen eingeben', true); return; }
+    o.remove(); cb(v);
+  };
+  o.querySelector('#nameOk').onclick = done;
+  o.querySelector('#nameNo').onclick = ()=> o.remove();
+  inp.onkeydown = (e)=>{ if(e.key==='Enter') done(); };
+}
+
 /* ---------- Eingabe-Sheet ---------- */
 function openSheet(mealKey){
-  sheet = { meal:mealKey, query:'', off:[], picked:null, amount:1, loading:false, error:'' };
+  sheet = { meal:mealKey, query:'', off:[], picked:null, amount:1, loading:false, error:'', scanning:false, scanMsg:'' };
   renderSheet();
 }
 function closeSheet(){
+  stopScanner();
   sheet = null;
   const o = document.getElementById('overlay');
   if(o) o.remove();
@@ -557,6 +645,20 @@ function recipeHits(){
     r.title.toLowerCase().includes(q) ||
     String(r.category||'').toLowerCase().includes(q)
   ).slice(0,12);
+}
+
+/* Vorlagen filtern: passende Mahlzeit zuerst, Suchbegriff beruecksichtigen */
+function templateHits(){
+  const q = (sheet.query||'').trim().toLowerCase();
+  let list = state.templates.filter(t=> t && t.name);
+  if(q) list = list.filter(t=> t.name.toLowerCase().includes(q));
+  // Vorlagen der aktuellen Mahlzeit nach oben
+  return list.sort((a,b)=>{
+    const am = a.meal===sheet.meal ? 0 : 1;
+    const bm = b.meal===sheet.meal ? 0 : 1;
+    if(am!==bm) return am-bm;
+    return String(a.name).localeCompare(String(b.name),'de');
+  }).slice(0,8);
 }
 
 /* Alle Rezepte als Dropdown, nach Kategorie gruppiert und alphabetisch sortiert */
@@ -614,6 +716,17 @@ function renderSheet(){
         ${recipeSelect()}
       </div>`;
 
+    const tpls = templateHits();
+    if(tpls.length){
+      inner += `<div class="grouphead">Gespeicherte Mahlzeiten</div>`;
+      inner += `<ul class="results">` + tpls.map(t=>
+        `<li><button data-tpl="${esc(t.id)}">
+          <span class="r-name">☆ ${esc(t.name)}</span>
+          <span class="r-meta">${t.items.length} Positionen · ${templatePoints(t)} Punkte</span>
+        </button></li>`
+      ).join('') + `</ul>`;
+    }
+
     inner += `<div class="grouphead">Aus euren Rezepten</div>`;
     if(hits.length){
       inner += `<ul class="results">` + hits.map(r=>{
@@ -643,12 +756,19 @@ function renderSheet(){
     if(!sheet.off.length && !sheet.error && !sheet.loading){
       inner += `<p class="muted" style="margin:8px 0 0">Für verpackte Produkte in der Open-Food-Facts-Datenbank nachschlagen.</p>`;
     }
-    inner += `<div class="row" style="margin-top:12px">
+    inner += `<div class="row" style="margin-top:12px;flex-wrap:wrap">
       <button class="action pk small" id="offBtn" ${sheet.loading||!(sheet.query||'').trim()?'disabled':''}>
         ${sheet.loading?'Sucht…':'In der Datenbank suchen'}
       </button>
+      <button class="action ghost small" id="scanBtn">📷 Barcode</button>
       <button class="action ghost small" id="freeBtn">Eigener Eintrag</button>
     </div>`;
+
+  } else if(sheet.picked === 'scan'){
+    inner += `<h3>Barcode scannen</h3>
+      <div id="reader" style="width:100%;border-radius:14px;overflow:hidden;background:#000;min-height:220px"></div>
+      <p class="muted" id="scanMsg" style="margin-top:10px">${esc(sheet.scanMsg||'Kamera wird gestartet…')}</p>
+      <button class="action ghost small" id="scanStop" style="margin-top:10px">Abbrechen</button>`;
 
   } else if(sheet.picked === 'free'){
     inner += `<h3>${esc(label)} – eigener Eintrag</h3>
@@ -706,6 +826,22 @@ function bindSheet(){
   });
   const rSel = document.getElementById('rSelect');
   if(rSel) rSel.onchange = ()=>{ if(rSel.value) pickRecipe(rSel.value); };
+
+  document.querySelectorAll('[data-tpl]').forEach(el=>{
+    el.onclick = async ()=>{
+      const t = state.templates.find(x=> String(x.id)===String(el.dataset.tpl));
+      if(!t) return;
+      const meal = sheet.meal;
+      closeSheet();
+      await addEntries(t.items.map(it=> Object.assign({}, it, {meal:meal, source:'template'})));
+      showToast('„' + t.name + '" eingetragen ✓');
+    };
+  });
+
+  const scanBtn = document.getElementById('scanBtn');
+  if(scanBtn) scanBtn.onclick = ()=>{ sheet.picked = 'scan'; sheet.scanMsg = 'Kamera wird gestartet…'; renderSheet(); startScanner(); };
+  const scanStop = document.getElementById('scanStop');
+  if(scanStop) scanStop.onclick = ()=>{ stopScanner(); sheet.picked = null; renderSheet(); };
   document.querySelectorAll('[data-off]').forEach(el=>{
     el.onclick = ()=>{
       sheet.picked = Object.assign({kind:'off'}, sheet.off[Number(el.dataset.off)]);
@@ -715,7 +851,7 @@ function bindSheet(){
   });
 
   const back = document.getElementById('backBtn');
-  if(back) back.onclick = ()=>{ sheet.picked = null; renderSheet(); };
+  if(back) back.onclick = ()=>{ stopScanner(); sheet.picked = null; renderSheet(); };
   const free = document.getElementById('freeBtn');
   if(free) free.onclick = ()=>{ sheet.picked = 'free'; renderSheet(); };
 
@@ -753,6 +889,110 @@ function bindSheet(){
     closeSheet();
     await addEntry({meal, name, kcal, protein:prot, fatSat:0, sugar:0, fiber:0});
   };
+}
+
+/* ---------- Barcode-Scanner ----------
+   Nutzt html5-qrcode, das erst beim ersten Antippen nachgeladen wird.
+   Kamera geht nur über HTTPS – bei GitHub Pages ist das gegeben.
+------------------------------------------- */
+const SCANNER_SRC = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+let scanner = null;
+let scannerLib = null;
+
+function loadScannerLib(){
+  if(scannerLib) return scannerLib;
+  scannerLib = new Promise((resolve, reject)=>{
+    if(window.Html5Qrcode) return resolve();
+    const el = document.createElement('script');
+    el.src = SCANNER_SRC;
+    el.onload = ()=> resolve();
+    el.onerror = ()=>{ scannerLib = null; reject(new Error('Scanner konnte nicht geladen werden')); };
+    document.head.appendChild(el);
+  });
+  return scannerLib;
+}
+
+function setScanMsg(msg){
+  if(sheet) sheet.scanMsg = msg;
+  const el = document.getElementById('scanMsg');
+  if(el) el.textContent = msg;
+}
+
+async function startScanner(){
+  try{
+    await loadScannerLib();
+  }catch(e){
+    setScanMsg('Scanner nicht verfügbar. Prüf die Internetverbindung oder such über den Namen.');
+    return;
+  }
+  if(!document.getElementById('reader')) return;
+  try{
+    scanner = new window.Html5Qrcode('reader', { verbose:false });
+    await scanner.start(
+      { facingMode:'environment' },
+      { fps:10, qrbox:{width:260, height:140} },
+      (text)=>{ stopScanner(); lookupBarcode(text); },
+      ()=>{}
+    );
+    setScanMsg('Barcode ins Bild halten.');
+  }catch(e){
+    console.error(e);
+    setScanMsg('Kein Kamerazugriff. Erlaub den Zugriff in den Browser-Einstellungen und versuch es erneut.');
+    scanner = null;
+  }
+}
+
+function stopScanner(){
+  if(!scanner) return;
+  const sc = scanner;
+  scanner = null;
+  try{ sc.stop().then(()=> sc.clear()).catch(()=>{}); }catch(e){}
+}
+
+async function lookupBarcode(code){
+  if(!sheet) return;
+  sheet.picked = null;
+  sheet.loading = true;
+  sheet.error = '';
+  renderSheet();
+  try{
+    const res = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json');
+    const data = await res.json();
+    if(!data || data.status !== 1 || !data.product){
+      sheet.loading = false;
+      sheet.error = 'Barcode ' + code + ' ist nicht im Verzeichnis. Trag das Produkt als eigenen Eintrag ein.';
+      renderSheet();
+      return;
+    }
+    const p = data.product;
+    const n = p.nutriments || {};
+    const prod = {
+      kind:'off',
+      name: p.product_name_de || p.product_name || ('Produkt ' + code),
+      brand: p.brands || '',
+      per100:{
+        kcal:    n['energy-kcal_100g']   || 0,
+        fatSat:  n['saturated-fat_100g'] || 0,
+        sugar:   n['sugars_100g']        || 0,
+        protein: n['proteins_100g']      || 0,
+        fiber:   n['fiber_100g']         || 0
+      }
+    };
+    sheet.loading = false;
+    if(!prod.per100.kcal){
+      sheet.error = 'Für „' + prod.name + '" sind keine Nährwerte hinterlegt. Trag sie als eigenen Eintrag ein.';
+      renderSheet();
+      return;
+    }
+    sheet.picked = prod;
+    sheet.amount = Number(p.serving_quantity) || 100;
+    renderSheet();
+  }catch(e){
+    console.error(e);
+    sheet.loading = false;
+    sheet.error = 'Verzeichnis nicht erreichbar. Prüf die Verbindung und versuch es erneut.';
+    renderSheet();
+  }
 }
 
 async function searchOFF(){
