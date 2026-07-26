@@ -339,6 +339,22 @@
   @keyframes petBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
   @keyframes petBounce{0%,100%{transform:translateY(0) scale(1);}30%{transform:translateY(-8px) scale(1.03);}60%{transform:translateY(0) scale(1);}}
   .pet-name{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:6px 0 2px;color:var(--ink);}
+  .pet-needs{display:flex;flex-direction:column;gap:7px;max-width:280px;margin:12px auto 0;}
+  .pet-need{display:flex;align-items:center;gap:8px;}
+  .pet-need .need-emoji{font-size:1rem;flex:none;width:22px;text-align:center;}
+  .pet-need .need-cap{font-size:0.74rem;color:var(--ink-soft);flex:none;width:64px;text-align:left;}
+  .pet-need .need-bar{flex:1;background:rgba(255,255,255,.6);border-radius:20px;height:9px;overflow:hidden;}
+  .pet-need .need-bar-fill{height:100%;border-radius:20px;transition:width .5s ease;}
+  .pet-need .need-val{font-size:0.7rem;color:var(--ink-soft);flex:none;width:30px;text-align:right;}
+  .pet-actions{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+  .pet-extras{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+  .pet-extra{
+    font-size:1.3rem;width:40px;height:40px;line-height:40px;text-align:center;
+    border-radius:12px;background:rgba(255,255,255,.5);border:1px solid var(--line);
+    transition:opacity .3s ease, filter .3s ease;
+  }
+  .pet-extra.locked{opacity:.35;filter:grayscale(1);}
+  .pet-extra.active{background:var(--clean-soft);border-color:var(--clean);}
   .pet-status{font-size:0.82rem;color:var(--ink-soft);margin-bottom:10px;}
   .pet-vitality-track{background:rgba(255,255,255,.55);border-radius:20px;height:9px;overflow:hidden;max-width:220px;margin:0 auto;}
   .pet-vitality-fill{height:100%;border-radius:20px;transition:width .6s ease;}
@@ -1840,6 +1856,7 @@ async function applySubtask(t, sub, who){
   secrets.forEach(b=> msgs.push(`${b.icon} Geheimes Abzeichen: „${b.name}" – ${b.hint}`));
   if(secrets.length) triggerConfetti();
 
+  await applyPetCare(allDone ? 'full' : 'small');
   await saveKey(KEYS.clean, state.clean);
   render();
   petReact();
@@ -2108,6 +2125,70 @@ function moodColor(percent){
 }
 // ---- Haus-Kätzchen (Tamagotchi) ----
 const PET_NAME = 'Cornelius';
+// --- Bedürfnisse: Futter, Laune, Sauberkeit (0-100) mit Zeitverfall ---
+const NEED_DECAY_PER_DAY = { futter: 22, laune: 16 }; // Sauberkeit kommt aus houseMood
+function ensurePetNeeds(){
+  state.clean.pet = state.clean.pet || {};
+  const p = state.clean.pet;
+  if(p.futter == null) p.futter = 70;
+  if(p.laune == null) p.laune = 70;
+  if(p.lastTick == null) p.lastTick = new Date().toISOString();
+  return p;
+}
+function applyPetDecay(){
+  const p = ensurePetNeeds();
+  const now = Date.now();
+  const last = new Date(p.lastTick).getTime();
+  const days = (now - last) / 86400000;
+  if(days > 0){
+    p.futter = Math.max(0, Math.round(p.futter - days * NEED_DECAY_PER_DAY.futter));
+    p.laune  = Math.max(0, Math.round(p.laune  - days * NEED_DECAY_PER_DAY.laune));
+    p.lastTick = new Date().toISOString();
+  }
+  return p;
+}
+function petNeeds(){
+  const p = ensurePetNeeds();
+  return {
+    futter: Math.round(p.futter),
+    laune: Math.round(p.laune),
+    sauberkeit: houseMood().percent
+  };
+}
+function petVitality(){
+  const n = petNeeds();
+  return Math.round(n.futter * 0.34 + n.laune * 0.33 + n.sauberkeit * 0.33);
+}
+async function feedPet(amount){
+  const p = ensurePetNeeds();
+  p.futter = Math.min(100, p.futter + amount);
+  await saveKey(KEYS.clean, state.clean);
+}
+async function cheerPet(amount){
+  const p = ensurePetNeeds();
+  p.laune = Math.min(100, p.laune + amount);
+  await saveKey(KEYS.clean, state.clean);
+}
+// Extras: schalten sich frei, wenn Cornelius es gut hat – verschwinden bei Vernachlässigung
+const PET_EXTRAS = [
+  {id:'halsband', icon:'🎀', name:'Halsband',   need:'lifetime', at:10},
+  {id:'napf',     icon:'🥣', name:'Voller Napf', need:'futter',  at:70},
+  {id:'ball',     icon:'🧶', name:'Wollknäuel',  need:'laune',   at:70},
+  {id:'blume',    icon:'🌻', name:'Blume',       need:'sauberkeit', at:80},
+  {id:'krone',    icon:'👑', name:'Krönchen',    need:'vitality', at:90}
+];
+function petExtrasState(){
+  const n = petNeeds();
+  const vit = petVitality();
+  const lifetime = state.clean.pet ? (state.clean.pet.careCount||0) : 0;
+  return PET_EXTRAS.map(x=>{
+    let val;
+    if(x.need==='lifetime') val = lifetime;
+    else if(x.need==='vitality') val = vit;
+    else val = n[x.need];
+    return { ...x, active: val >= x.at };
+  });
+}
 function petDayPhase(){
   const h = new Date().getHours();
   if(h >= 6 && h < 9)  return 'morgen';
@@ -2208,6 +2289,13 @@ function petScene(pet){
     ${zzz}
   </div>`;
 }
+async function applyPetCare(strength){
+  const p = ensurePetNeeds();
+  p.futter = Math.min(100, p.futter + (strength==='full' ? 16 : 9));
+  p.laune  = Math.min(100, p.laune  + (strength==='full' ? 14 : 8));
+  p.careCount = (p.careCount||0) + 1;
+  await saveKey(KEYS.clean, state.clean);
+}
 function petReact(){
   const petCard = document.getElementById('petCard');
   if(!petCard) return;
@@ -2230,21 +2318,24 @@ function petReact(){
   setTimeout(()=>{ if(bubble.isConnected) bubble.remove(); }, 4000);
 }
 function petState(){
-  // combine current house mood with how long since the last completed task
-  const mood = houseMood().percent;
-  const lastCare = state.clean.streak && state.clean.streak.lastDate ? state.clean.streak.lastDate : null;
-  const daysSinceCare = lastCare ? daysSinceCalendar(lastCare + 'T12:00:00') : 99;
-  // neglect penalty: each day without any completed task drags the pet down
-  const neglect = Math.min(60, daysSinceCare * 12);
-  const vitality = Math.max(0, Math.min(100, mood - neglect));
-
-  let tier, face, label, purr;
-  if(vitality >= 80){ tier='happy';   face='😻'; label='rundum glücklich'; purr='schnurrt zufrieden'; }
-  else if(vitality >= 55){ tier='content'; face='😺'; label='zufrieden'; purr='döst gemütlich'; }
-  else if(vitality >= 30){ tier='meh';   face='🐱'; label='etwas quengelig'; purr='maunzt leise'; }
-  else if(vitality >= 12){ tier='sad';   face='🙀'; label='vernachlässigt'; purr='schaut vorwurfsvoll'; }
-  else { tier='hungry'; face='😿'; label='ganz traurig'; purr='miaut kläglich'; }
-  return { vitality, tier, face, label, purr, daysSinceCare };
+  const n = petNeeds();
+  const vitality = petVitality();
+  // the lowest need drives the mood/message so the neediest area gets attention
+  const lowest = Math.min(n.futter, n.laune, n.sauberkeit);
+  let tier, label, purr;
+  if(vitality >= 80){ tier='happy';   label='rundum glücklich'; purr='schnurrt zufrieden'; }
+  else if(vitality >= 55){ tier='content'; label='zufrieden'; purr='döst gemütlich'; }
+  else if(vitality >= 32){ tier='meh';   label='etwas quengelig'; purr='maunzt leise'; }
+  else if(vitality >= 15){ tier='sad';   label='vernachlässigt'; purr='schaut vorwurfsvoll'; }
+  else { tier='hungry'; label='ganz traurig'; purr='miaut kläglich'; }
+  // which need is most urgent?
+  let want = null;
+  if(lowest < 40){
+    if(n.futter === lowest) want = 'futter';
+    else if(n.sauberkeit === lowest) want = 'sauberkeit';
+    else want = 'laune';
+  }
+  return { vitality, tier, label, purr, needs:n, want };
 }
 const PET_MESSAGES = {
   happy: [
@@ -2337,16 +2428,48 @@ function viewClean(){
   const streak = state.clean.streak || {count:0, lastDate:null};
   const streakActive = streak.lastDate === isoDate(new Date()) || streak.lastDate === isoDate(addDays(new Date(),-1));
   let html = `<h2 class="section-title">Putzplan</h2>`;
+  applyPetDecay();
   const pet = petState();
+  const n = pet.needs;
+  const extras = petExtrasState();
+  const needBar = (emoji, cap, val, color)=>`
+    <div class="pet-need">
+      <span class="need-emoji">${emoji}</span>
+      <span class="need-cap">${cap}</span>
+      <span class="need-bar"><span class="need-bar-fill" style="width:${val}%;background:${color}"></span></span>
+      <span class="need-val">${val}</span>
+    </div>`;
   html += `<div class="pet-card ${pet.tier}" id="petCard">
     ${petScene(pet)}
     <div class="pet-name">${PET_NAME}</div>
     <div class="pet-status">${esc(pet.label)} · ${pet.purr}</div>
-    <div class="pet-vitality-track"><div class="pet-vitality-fill" style="width:${pet.vitality}%;background:${moodColor(pet.vitality)}"></div></div>
+    <div class="pet-needs">
+      ${needBar('🍗','Futter', n.futter, moodColor(n.futter))}
+      ${needBar('😻','Laune', n.laune, moodColor(n.laune))}
+      ${needBar('🧹','Sauberkeit', n.sauberkeit, moodColor(n.sauberkeit))}
+    </div>
+    <div class="pet-actions">
+      <button class="action ghost small" id="petFeedBtn">🍗 Füttern</button>
+      <button class="action ghost small" id="petPlayBtn">🧶 Spielen</button>
+    </div>
+    <div class="pet-extras">
+      ${extras.map(x=>`<span class="pet-extra ${x.active?'active':'locked'}" title="${esc(x.name)}${x.active?'':' – noch verschlossen'}">${x.icon}</span>`).join('')}
+    </div>
   </div>`;
+  const quest = dailyQuestTask();
+  if(quest){
+    const done = questDoneToday();
+    html += `<div class="quest-card ${done?'done':''}">
+      <div class="quest-label">${done ? 'Tagesquest erfüllt' : 'Tagesquest heute'}</div>
+      <h4>${done ? '✅ ' : '🎯 '}${esc(quest.task)}</h4>
+      <div class="quest-reward">${done ? 'Cornelius freut sich! Morgen wartet die nächste.' : 'Macht Cornelius besonders glücklich, wenn heute erledigt'}</div>
+    </div>`;
+  }
+
   const season = currentSeason();
   const seasonPoints = Object.values(points).reduce((s,p)=>s+p,0);
-  html += `<div class="streak-box" style="background:var(--week-soft)">${season.icon} Saison ${season.label} ${season.year} · ${seasonPoints} Punkte</div>`;
+  html += `<details class="section"><summary>📊 Statistik &amp; Fortschritt</summary><div>
+    <div class="streak-box" style="background:var(--week-soft)">${season.icon} Saison ${season.label} ${season.year} · ${seasonPoints} Punkte</div>`;
   if(streak.count > 0 && streakActive){
     html += `<div class="streak-box">🔥 ${streak.count} Tag${streak.count===1?'':'e'} in Folge etwas erledigt</div>`;
   } else if(streak.count > 0){
@@ -2360,26 +2483,16 @@ function viewClean(){
     <div class="mood-track"><div class="mood-fill" style="width:${mood.percent}%;background:${moodColor(mood.percent)}"></div></div>
     </div>`;
 
-  const quest = dailyQuestTask();
-  if(quest){
-    const done = questDoneToday();
-    html += `<div class="quest-card ${done?'done':''}">
-      <div class="quest-label">${done ? 'Tagesquest erfüllt' : 'Tagesquest heute'}</div>
-      <h4>${done ? '✅ ' : '🎯 '}${esc(quest.task)}</h4>
-      <div class="quest-reward">${done ? 'Stark! Morgen wartet die nächste Quest.' : 'Doppelte Punkte (+' + (taskXpValue(quest)*2) + ') wenn du sie heute schaffst'}</div>
-    </div>`;
-  }
-
   if(catMoods.length){
-    html += `<details class="section"><summary>Bereiche im Blick</summary><div>
+    html += `<div class="mood-label" style="margin:10px 0 4px">Bereiche im Blick</div>
       ${catMoods.map(cm=>`
         <button class="need-row" data-needcat="${escAttr(cm.cat)}">
           <span class="need-icon">${CATEGORY_ICONS[cm.cat]||'✨'}</span>
           <span class="need-label">${esc(cm.cat)}</span>
           <span class="need-track"><span class="need-fill" style="width:${cm.percent}%;background:${moodColor(cm.percent)}"></span></span>
-        </button>`).join('')}
-    </div></details>`;
+        </button>`).join('')}`;
   }
+  html += `</div></details>`;
 
   if(members.length){
     const teamPoints = Object.values(points).reduce((s,p)=>s+p, 0);
@@ -2816,6 +2929,30 @@ function bindEvents(){
   };
 
   // Cleaning
+  const petFeedBtn = document.getElementById('petFeedBtn');
+  if(petFeedBtn) petFeedBtn.onclick = async ()=>{
+    const p = ensurePetNeeds();
+    const today = isoDate(new Date());
+    p.feedLog = (p.feedLog && p.feedLog.date===today) ? p.feedLog : {date:today, count:0};
+    if(p.feedLog.count >= 3){ showToast('Cornelius ist erstmal satt 🐾'); return; }
+    p.feedLog.count++;
+    await feedPet(12);
+    render();
+    petReact();
+    showToast('Cornelius wurde gefüttert 🍗');
+  };
+  const petPlayBtn = document.getElementById('petPlayBtn');
+  if(petPlayBtn) petPlayBtn.onclick = async ()=>{
+    const p = ensurePetNeeds();
+    const today = isoDate(new Date());
+    p.playLog = (p.playLog && p.playLog.date===today) ? p.playLog : {date:today, count:0};
+    if(p.playLog.count >= 3){ showToast('Cornelius braucht eine Pause 😴'); return; }
+    p.playLog.count++;
+    await cheerPet(12);
+    render();
+    petReact();
+    showToast('Ihr habt zusammen gespielt 🧶');
+  };
   const petCard = document.getElementById('petCard');
   if(petCard){
     petCard.onclick = (e)=>{
@@ -2987,6 +3124,7 @@ function bindEvents(){
         moodBefore: moodBeforeAction
       }));
 
+      await applyPetCare('full');
       await saveKey(KEYS.clean, state.clean); render();
       petReact();
 
