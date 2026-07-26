@@ -2125,6 +2125,17 @@ function moodColor(percent){
 }
 // ---- Haus-Kätzchen (Tamagotchi) ----
 const PET_NAME = 'Cornelius';
+const PET_FEED_COOLDOWN_MIN = 240;  // alle 4 Stunden füttern
+const PET_PLAY_COOLDOWN_MIN = 180;  // alle 3 Stunden spielen
+function petCooldownLeft(lastIso, cooldownMin){
+  if(!lastIso) return 0;
+  const elapsed = (Date.now() - new Date(lastIso).getTime()) / 60000;
+  return Math.max(0, Math.ceil(cooldownMin - elapsed));
+}
+function fmtWait(min){
+  if(min >= 60){ const h = Math.floor(min/60), m = min%60; return h + ' Std' + (m? ' ' + m + ' Min':''); }
+  return min + ' Min';
+}
 // --- Bedürfnisse: Futter, Laune, Sauberkeit (0-100) mit Zeitverfall ---
 const NEED_DECAY_PER_DAY = { futter: 22, laune: 16 }; // Sauberkeit kommt aus houseMood
 function ensurePetNeeds(){
@@ -2449,8 +2460,13 @@ function viewClean(){
       ${needBar('🧹','Sauberkeit', n.sauberkeit, moodColor(n.sauberkeit))}
     </div>
     <div class="pet-actions">
-      <button class="action ghost small" id="petFeedBtn">🍗 Füttern</button>
-      <button class="action ghost small" id="petPlayBtn">🧶 Spielen</button>
+      ${(()=>{
+        const pp = ensurePetNeeds();
+        const fw = petCooldownLeft(pp.lastFed, PET_FEED_COOLDOWN_MIN);
+        const pw = petCooldownLeft(pp.lastPlayed, PET_PLAY_COOLDOWN_MIN);
+        return `<button class="action ghost small" id="petFeedBtn"${fw>0?' style="opacity:.5"':''}>🍗 Füttern${fw>0?' ('+fmtWait(fw)+')':''}</button>
+        <button class="action ghost small" id="petPlayBtn"${pw>0?' style="opacity:.5"':''}>🧶 Spielen${pw>0?' ('+fmtWait(pw)+')':''}</button>`;
+      })()}
     </div>
     <div class="pet-extras">
       ${extras.map(x=>`<span class="pet-extra ${x.active?'active':'locked'}" title="${esc(x.name)}${x.active?'':' – noch verschlossen'}">${x.icon}</span>`).join('')}
@@ -2484,13 +2500,17 @@ function viewClean(){
     </div>`;
 
   if(catMoods.length){
-    html += `<div class="mood-label" style="margin:10px 0 4px">Bereiche im Blick</div>
-      ${catMoods.map(cm=>`
-        <button class="need-row" data-needcat="${escAttr(cm.cat)}">
+    html += `<div class="mood-label" style="margin:10px 0 4px">Sauberkeit je Bereich</div>
+      <div class="muted" style="font-size:0.72rem;margin-bottom:6px">Voll = alles frisch erledigt · sinkt, wenn Aufgaben fällig werden</div>
+      ${catMoods.map(cm=>{
+        const word = cm.percent>=80?'top':cm.percent>=50?'ok':cm.percent>=25?'bald dran':'überfällig';
+        return `<button class="need-row" data-needcat="${escAttr(cm.cat)}">
           <span class="need-icon">${CATEGORY_ICONS[cm.cat]||'✨'}</span>
           <span class="need-label">${esc(cm.cat)}</span>
           <span class="need-track"><span class="need-fill" style="width:${cm.percent}%;background:${moodColor(cm.percent)}"></span></span>
-        </button>`).join('')}`;
+          <span class="need-val" style="font-size:0.68rem;color:var(--ink-soft);flex:none;width:56px;text-align:right">${word}</span>
+        </button>`;
+      }).join('')}`;
   }
   html += `</div></details>`;
 
@@ -2932,11 +2952,12 @@ function bindEvents(){
   const petFeedBtn = document.getElementById('petFeedBtn');
   if(petFeedBtn) petFeedBtn.onclick = async ()=>{
     const p = ensurePetNeeds();
-    const today = isoDate(new Date());
-    p.feedLog = (p.feedLog && p.feedLog.date===today) ? p.feedLog : {date:today, count:0};
-    if(p.feedLog.count >= 3){ showToast('Cornelius ist erstmal satt 🐾'); return; }
-    p.feedLog.count++;
-    await feedPet(12);
+    const now = Date.now();
+    const wait = petCooldownLeft(p.lastFed, PET_FEED_COOLDOWN_MIN);
+    if(wait > 0){ showToast('Cornelius ist noch satt – wieder in ' + fmtWait(wait) + ' 🐾'); return; }
+    if(p.futter >= 100){ showToast('Cornelius ist pappsatt 🍽️'); return; }
+    p.lastFed = new Date().toISOString();
+    await feedPet(20);
     render();
     petReact();
     showToast('Cornelius wurde gefüttert 🍗');
@@ -2944,11 +2965,11 @@ function bindEvents(){
   const petPlayBtn = document.getElementById('petPlayBtn');
   if(petPlayBtn) petPlayBtn.onclick = async ()=>{
     const p = ensurePetNeeds();
-    const today = isoDate(new Date());
-    p.playLog = (p.playLog && p.playLog.date===today) ? p.playLog : {date:today, count:0};
-    if(p.playLog.count >= 3){ showToast('Cornelius braucht eine Pause 😴'); return; }
-    p.playLog.count++;
-    await cheerPet(12);
+    const wait = petCooldownLeft(p.lastPlayed, PET_PLAY_COOLDOWN_MIN);
+    if(wait > 0){ showToast('Cornelius macht gerade ein Nickerchen – wieder in ' + fmtWait(wait) + ' 😴'); return; }
+    if(p.laune >= 100){ showToast('Cornelius ist bestens gelaunt 😻'); return; }
+    p.lastPlayed = new Date().toISOString();
+    await cheerPet(20);
     render();
     petReact();
     showToast('Ihr habt zusammen gespielt 🧶');
