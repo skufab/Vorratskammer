@@ -315,6 +315,83 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   #toast.error{background:#9C3E2C;}
+  .pet-card{
+    position:relative;
+    border-radius:20px;
+    padding:18px 16px 16px;
+    margin-bottom:16px;
+    text-align:center;
+    overflow:hidden;
+    transition:background .6s ease;
+  }
+  .pet-card.happy{background:linear-gradient(160deg,#E4EEC9 0%,#F7E7B8 100%);}
+  .pet-card.content{background:linear-gradient(160deg,#EAF0D8 0%,#F5EDE1 100%);}
+  .pet-card.meh{background:linear-gradient(160deg,#F5E7CE 0%,#F3DBC4 100%);}
+  .pet-card.sad{background:linear-gradient(160deg,#F1DDD2 0%,#EAD9CC 100%);}
+  .pet-card.hungry{background:linear-gradient(160deg,#EAD4CC 0%,#E0C9BE 100%);}
+  .pet-cat{
+    width:132px;height:132px;margin:0 auto;cursor:pointer;
+    transform-origin:center bottom;
+    animation:petBreathe 3.4s ease-in-out infinite;
+  }
+  .pet-card.hungry .pet-cat, .pet-card.sad .pet-cat{animation-duration:5s;}
+  .pet-card.happy .pet-cat{animation:petBounce 2.4s ease-in-out infinite;}
+  @keyframes petBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+  @keyframes petBounce{0%,100%{transform:translateY(0) scale(1);}30%{transform:translateY(-8px) scale(1.03);}60%{transform:translateY(0) scale(1);}}
+  .pet-name{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:6px 0 2px;color:var(--ink);}
+  .pet-status{font-size:0.82rem;color:var(--ink-soft);margin-bottom:10px;}
+  .pet-vitality-track{background:rgba(255,255,255,.55);border-radius:20px;height:9px;overflow:hidden;max-width:220px;margin:0 auto;}
+  .pet-vitality-fill{height:100%;border-radius:20px;transition:width .6s ease;}
+  .pet-bubble{
+    display:inline-block;background:#fff;border:1px solid var(--line);
+    border-radius:16px;padding:8px 13px;margin-top:12px;font-size:0.84rem;
+    color:var(--ink);max-width:280px;box-shadow:0 3px 10px rgba(74,51,36,.10);
+    animation:petBubbleIn .3s ease;
+  }
+  @keyframes petBubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .pet-hearts{position:absolute;pointer-events:none;font-size:1.4rem;animation:petHeart 1.3s ease-out forwards;}
+  @keyframes petHeart{0%{opacity:1;transform:translateY(0) scale(.6);}100%{opacity:0;transform:translateY(-70px) scale(1.2);}}
+  .pet-scene{
+    position:relative;height:150px;border-radius:16px;overflow:hidden;margin-bottom:12px;
+    border:1px solid var(--line);
+  }
+  .pet-sky{position:absolute;inset:0;transition:background 1s ease;}
+  .pet-sky.morgen{background:linear-gradient(180deg,#FBD9A8 0%,#FBEBD2 60%,#EAF3D8 100%);}
+  .pet-sky.vormittag{background:linear-gradient(180deg,#AFD6EE 0%,#D6ECF6 70%,#EAF3D8 100%);}
+  .pet-sky.mittag{background:linear-gradient(180deg,#9BCDED 0%,#CDE8F5 70%,#E7F1D5 100%);}
+  .pet-sky.nachmittag{background:linear-gradient(180deg,#BcdCEF 0%,#E4EEDD 70%,#E7F1D5 100%);}
+  .pet-sky.abend{background:linear-gradient(180deg,#E9A87C 0%,#F3C9A0 45%,#D9C48E 100%);}
+  .pet-sky.nacht{background:linear-gradient(180deg,#2C3355 0%,#3E4668 55%,#4A5340 100%);}
+  .pet-sun{position:absolute;width:34px;height:34px;border-radius:50%;transition:all 1s ease;}
+  .pet-sun.day{background:radial-gradient(circle,#FFE9A8,#FBC765);box-shadow:0 0 22px rgba(251,199,101,.7);}
+  .pet-sun.night{background:radial-gradient(circle,#F4F1DC,#D8D2B0);box-shadow:0 0 16px rgba(240,238,214,.5);}
+  .pet-stars{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;}
+  .pet-sky.nacht + .pet-stars{opacity:1;}
+  .pet-ground{position:absolute;left:0;right:0;bottom:0;height:52px;}
+  .pet-grass-fruehling{background:linear-gradient(180deg,#8FC15A 0%,#6FA23F 100%);}
+  .pet-grass-sommer{background:linear-gradient(180deg,#7DB04A 0%,#5F8A34 100%);}
+  .pet-grass-herbst{background:linear-gradient(180deg,#C79A4A 0%,#9A7534 100%);}
+  .pet-grass-winter{background:linear-gradient(180deg,#EAF1F5 0%,#CDD9E0 100%);}
+  .pet-hedge{position:absolute;left:0;right:0;bottom:44px;height:26px;
+    background:radial-gradient(circle at 12px 14px,#4F7A34 11px,transparent 12px) repeat-x;
+    background-size:24px 26px;opacity:.9;}
+  .pet-hedge.winter{background:radial-gradient(circle at 12px 14px,#8FA98C 11px,transparent 12px) repeat-x;background-size:24px 26px;}
+  .pet-actor{
+    position:absolute;bottom:26px;width:70px;height:70px;
+    transition:left 1.4s ease-in-out;
+  }
+  .pet-actor svg{width:100%;height:100%;}
+  .pet-actor.walk{animation:petStep .5s ease-in-out infinite;}
+  .pet-actor.play{animation:petPlay 1.6s ease-in-out infinite;}
+  .pet-actor.sleep{animation:petSleepBreath 3.6s ease-in-out infinite;}
+  .pet-actor.flip{transform:scaleX(-1);}
+  @keyframes petStep{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-4px) rotate(1deg);}}
+  @keyframes petPlay{0%,100%{transform:translateY(0) rotate(0);}25%{transform:translateY(-10px) rotate(-8deg);}75%{transform:translateY(-6px) rotate(8deg);}}
+  @keyframes petSleepBreath{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  .pet-zzz{position:absolute;font-size:0.9rem;color:#fff;opacity:.85;animation:petZzz 2.4s ease-in-out infinite;}
+  @keyframes petZzz{0%{opacity:0;transform:translateY(0) scale(.7);}40%{opacity:.9;}100%{opacity:0;transform:translateY(-22px) scale(1.1);}}
+  .pet-butterfly{position:absolute;font-size:0.95rem;animation:petFly 6s ease-in-out infinite;}
+  @keyframes petFly{0%{transform:translate(0,0);}25%{transform:translate(30px,-14px);}50%{transform:translate(60px,4px);}75%{transform:translate(30px,-10px);}100%{transform:translate(0,0);}}
   @keyframes confettiFall{
     0%{ transform:translateY(0) rotate(0deg); opacity:1; }
     100%{ transform:translateY(100vh) rotate(540deg); opacity:0; }
@@ -1765,6 +1842,7 @@ async function applySubtask(t, sub, who){
 
   await saveKey(KEYS.clean, state.clean);
   render();
+  petReact();
   msgs.forEach((m,i)=> setTimeout(()=> showToast(m), 300 + i*1900));
 }
 const SEASON_NAMES = ['Winter','Frühling','Sommer','Herbst'];
@@ -2028,6 +2106,219 @@ function moodColor(percent){
   if(percent>=25) return '#C77B3E';
   return '#B0503A';
 }
+// ---- Haus-Kätzchen (Tamagotchi) ----
+const PET_NAME = 'Cornelius';
+function petDayPhase(){
+  const h = new Date().getHours();
+  if(h >= 6 && h < 9)  return 'morgen';
+  if(h >= 9 && h < 12) return 'vormittag';
+  if(h >= 12 && h < 14) return 'mittag';
+  if(h >= 14 && h < 18) return 'nachmittag';
+  if(h >= 18 && h < 22) return 'abend';
+  return 'nacht';
+}
+function petActivity(tier){
+  const phase = petDayPhase();
+  if((phase==='nacht' || phase==='mittag') && (tier==='happy'||tier==='content')) return 'schlafen';
+  if(phase==='nacht') return 'doesen';
+  if(tier==='happy') return 'spielen';
+  if(tier==='content') return 'laufen';
+  return 'sitzen';
+}
+function petBodySvg(tier, activity){
+  const face = {
+    happy:'<circle cx="26" cy="30" r="2.2" fill="#2b2b2b"/><circle cx="40" cy="30" r="2.2" fill="#2b2b2b"/><path d="M29 36 q4 4 8 0" stroke="#2b2b2b" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    content:'<circle cx="26" cy="30" r="2.2" fill="#2b2b2b"/><circle cx="40" cy="30" r="2.2" fill="#2b2b2b"/><path d="M31 36 q2 2 4 0" stroke="#2b2b2b" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+    meh:'<path d="M23 30 h5 M38 30 h5" stroke="#2b2b2b" stroke-width="1.8" stroke-linecap="round"/><path d="M31 37 h4" stroke="#2b2b2b" stroke-width="1.6" stroke-linecap="round"/>',
+    sad:'<path d="M24 31 q2 -2 4 0 M38 31 q2 -2 4 0" stroke="#2b2b2b" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M31 38 q2 -2 4 0" stroke="#2b2b2b" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+    hungry:'<path d="M23 28 l5 3 M28 28 l-5 3 M38 28 l5 3 M43 28 l-5 3" stroke="#2b2b2b" stroke-width="1.6" stroke-linecap="round"/><path d="M31 38 q2 -2 4 0" stroke="#2b2b2b" stroke-width="1.6" fill="none" stroke-linecap="round"/>'
+  }[tier] || '';
+  const stripes = '<path d="M33 12 v6" stroke="#6b4f30" stroke-width="2.4" stroke-linecap="round"/><path d="M27 14 l1.5 5" stroke="#6b4f30" stroke-width="2" stroke-linecap="round"/><path d="M39 14 l-1.5 5" stroke="#6b4f30" stroke-width="2" stroke-linecap="round"/>';
+
+  if(activity==='schlafen' || activity==='doesen'){
+    // curled up sleeping
+    return `<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="35" cy="52" rx="30" ry="15" fill="#9c7a4f" stroke="#4A3324" stroke-width="2.5"/>
+      <path d="M8 52 q4 -8 14 -9" fill="none" stroke="#6b4f30" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M60 50 q-6 -2 -12 0" fill="none" stroke="#6b4f30" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="20" cy="48" rx="12" ry="10" fill="#9c7a4f" stroke="#4A3324" stroke-width="2.5"/>
+      <path d="M12 41 l2 -7 l6 5 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="2"/>
+      <path d="M24 40 l3 -7 l5 6 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="2"/>
+      <path d="M14 49 q3 2 7 0" stroke="#2b2b2b" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M24 49 q3 2 6 0" stroke="#2b2b2b" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // upright body (sit / walk / play) — head + body + tail
+  const legs = (activity==='laufen')
+    ? '<rect x="24" y="52" width="5" height="12" rx="2" fill="#9c7a4f" stroke="#4A3324" stroke-width="2"/><rect x="40" y="52" width="5" height="12" rx="2" fill="#8a6a44" stroke="#4A3324" stroke-width="2"/>'
+    : '<rect x="22" y="54" width="6" height="10" rx="3" fill="#9c7a4f" stroke="#4A3324" stroke-width="2"/><rect x="41" y="54" width="6" height="10" rx="3" fill="#9c7a4f" stroke="#4A3324" stroke-width="2"/>';
+  const tail = (activity==='spielen')
+    ? '<path d="M50 52 q18 -6 10 -22" fill="none" stroke="#9c7a4f" stroke-width="6" stroke-linecap="round"/><path d="M50 52 q18 -6 10 -22" fill="none" stroke="#6b4f30" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 6"/>'
+    : '<path d="M50 54 q16 2 14 -14" fill="none" stroke="#9c7a4f" stroke-width="6" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+    ${tail}
+    <ellipse cx="33" cy="48" rx="18" ry="16" fill="#9c7a4f" stroke="#4A3324" stroke-width="2.5"/>
+    ${legs}
+    <path d="M19 20 l3 -12 l10 9 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M47 20 l-3 -12 l-10 9 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M22 17 l2 -6 l5 5 Z" fill="#C98B7A"/>
+    <path d="M44 17 l-2 -6 l-5 5 Z" fill="#C98B7A"/>
+    <circle cx="33" cy="30" r="18" fill="#9c7a4f" stroke="#4A3324" stroke-width="2.5"/>
+    ${stripes}
+    <ellipse cx="33" cy="35" rx="10" ry="7" fill="#e9dcc4"/>
+    ${face}
+    <path d="M31 33 h4 l-2 2.5 Z" fill="#C1477A" stroke="#4A3324" stroke-width="1"/>
+    <path d="M23 33 l-9 -2 M23 35 l-9 1 M43 33 l9 -2 M43 35 l9 1" stroke="#4A3324" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+  </svg>`;
+}
+function petScene(pet){
+  const phase = petDayPhase();
+  const activity = petActivity(pet.tier);
+  const season = currentSeason().key; // fruehling/sommer/herbst/winter
+  const isNight = phase==='nacht';
+  const sunLeft = {morgen:14, vormittag:35, mittag:50, nachmittag:66, abend:84, nacht:78};
+  const sunTop  = {morgen:70, vormittag:30, mittag:14, nachmittag:30, abend:66, nacht:20};
+
+  // where the cat stands, and which way it faces
+  const catLeft = state._petPos != null ? state._petPos : 40;
+  const flip = state._petFlip ? 'flip' : '';
+  const actClass = (activity==='laufen')?'walk':(activity==='spielen')?'play':(activity==='schlafen'||activity==='doesen')?'sleep':'';
+
+  const stars = isNight
+    ? '<div class="pet-stars">' + [ [15,20],[30,12],[55,24],[72,16],[85,30],[45,10] ].map(([l,t])=>`<span style="position:absolute;left:${l}%;top:${t}%;color:#fff;font-size:0.6rem;opacity:.8">✦</span>`).join('') + '</div>'
+    : '';
+  const zzz = (activity==='schlafen'||activity==='doesen')
+    ? `<span class="pet-zzz" style="left:${Math.min(88,catLeft+9)}%;bottom:78px">z</span>` : '';
+  const deco = (season==='sommer' && !isNight && (activity==='spielen'||activity==='laufen'||activity==='sitzen'))
+    ? '<span class="pet-butterfly" style="left:18%;bottom:96px">🦋</span>' : '';
+  const seasonalGround = (season==='herbst' && !isNight)
+    ? '<span style="position:absolute;left:60%;bottom:40px;font-size:0.8rem">🍂</span><span style="position:absolute;left:25%;bottom:36px;font-size:0.7rem">🍁</span>'
+    : (season==='winter' ? '<span style="position:absolute;left:50%;top:20%;font-size:0.7rem;color:#fff">❄</span><span style="position:absolute;left:70%;top:40%;font-size:0.6rem;color:#fff">❄</span>' : '');
+
+  return `<div class="pet-scene" id="petScene">
+    <div class="pet-sky ${phase}"></div>
+    ${stars}
+    <div class="pet-sun ${isNight?'night':'day'}" style="left:${sunLeft[phase]}%;top:${sunTop[phase]}%;"></div>
+    <div class="pet-hedge ${season==='winter'?'winter':''}"></div>
+    <div class="pet-ground pet-grass-${season}"></div>
+    ${seasonalGround}
+    ${deco}
+    <div class="pet-actor ${actClass} ${flip}" id="petActor" style="left:${catLeft}%">${petBodySvg(pet.tier, activity)}</div>
+    ${zzz}
+  </div>`;
+}
+function petReact(){
+  const petCard = document.getElementById('petCard');
+  if(!petCard) return;
+  for(let i=0;i<5;i++){
+    const h = document.createElement('div');
+    h.className = 'pet-hearts';
+    h.textContent = ['💛','😻','✨','💚'][Math.floor(Math.random()*4)];
+    h.style.left = (40 + Math.random()*52) + '%';
+    h.style.top = '40%';
+    h.style.animationDelay = (i*0.1)+'s';
+    petCard.appendChild(h);
+    setTimeout(()=> h.remove(), 1600);
+  }
+  const old = petCard.querySelector('.pet-bubble');
+  if(old) old.remove();
+  const bubble = document.createElement('div');
+  bubble.className = 'pet-bubble';
+  bubble.textContent = ['Mmmh, danke! 😻','So sch\u00f6n sauber~','Cornelius ist gl\u00fccklich!','Schnurr … weiter so!'][Math.floor(Math.random()*4)];
+  petCard.appendChild(bubble);
+  setTimeout(()=>{ if(bubble.isConnected) bubble.remove(); }, 4000);
+}
+function petState(){
+  // combine current house mood with how long since the last completed task
+  const mood = houseMood().percent;
+  const lastCare = state.clean.streak && state.clean.streak.lastDate ? state.clean.streak.lastDate : null;
+  const daysSinceCare = lastCare ? daysSinceCalendar(lastCare + 'T12:00:00') : 99;
+  // neglect penalty: each day without any completed task drags the pet down
+  const neglect = Math.min(60, daysSinceCare * 12);
+  const vitality = Math.max(0, Math.min(100, mood - neglect));
+
+  let tier, face, label, purr;
+  if(vitality >= 80){ tier='happy';   face='😻'; label='rundum glücklich'; purr='schnurrt zufrieden'; }
+  else if(vitality >= 55){ tier='content'; face='😺'; label='zufrieden'; purr='döst gemütlich'; }
+  else if(vitality >= 30){ tier='meh';   face='🐱'; label='etwas quengelig'; purr='maunzt leise'; }
+  else if(vitality >= 12){ tier='sad';   face='🙀'; label='vernachlässigt'; purr='schaut vorwurfsvoll'; }
+  else { tier='hungry'; face='😿'; label='ganz traurig'; purr='miaut kläglich'; }
+  return { vitality, tier, face, label, purr, daysSinceCare };
+}
+const PET_MESSAGES = {
+  happy: [
+    'Alles blitzt und blinkt – ich bin der glücklichste Stubentiger! 😻',
+    'Ihr kümmert euch so gut um mich. Schnurr~',
+    'Ein sauberes Zuhause, ein zufriedener Cornelius.'
+  ],
+  content: [
+    'Mir geht\u2019s gut. Ein Kraulen (=eine Aufgabe) nehme ich trotzdem gern.',
+    'Gemütlich hier. Aber da war doch noch was zu tun, oder?',
+    'Ich döse. Weck mich, wenn wieder was glänzt.'
+  ],
+  meh: [
+    'Hmpf. Da stapelt sich langsam was, Menschlein.',
+    'Ich werde ungeduldig – wie w\u00e4r\u2019s mit der Tagesquest?',
+    'Ein bisschen Aufmerksamkeit t\u00e4te mir gut.'
+  ],
+  sad: [
+    'Ich f\u00fchl mich vernachl\u00e4ssigt … eine Aufgabe w\u00fcrde helfen. 🙀',
+    'So viel liegt liegen. Bitte k\u00fcmmert euch ein wenig um mich.',
+    'Meine Schn\u00e4uzchen h\u00e4ngt. Rettet mich mit etwas Putzen!'
+  ],
+  hungry: [
+    'Miau … mir geht\u2019s richtig schlecht. Bitte, nur eine Aufgabe? 😿',
+    'Ich verhungere fast vor lauter Unordnung!',
+    'Cornelius braucht dringend Zuwendung. Jetzt w\u00e4re ein guter Moment.'
+  ]
+};
+function petMessage(tier){
+  const arr = PET_MESSAGES[tier] || PET_MESSAGES.content;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+function petCatSvg(tier){
+  // eyes and mouth change by tier
+  const eyes = {
+    happy:   '<path d="M40 60 q6 -7 12 0" stroke="#2b2b2b" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M76 60 q6 -7 12 0" stroke="#2b2b2b" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    content: '<circle cx="46" cy="60" r="4.5" fill="#2b2b2b"/><circle cx="82" cy="60" r="4.5" fill="#2b2b2b"/>',
+    meh:     '<circle cx="46" cy="61" r="4" fill="#2b2b2b"/><circle cx="82" cy="61" r="4" fill="#2b2b2b"/><path d="M40 52 l10 3" stroke="#2b2b2b" stroke-width="2.5" stroke-linecap="round"/><path d="M88 52 l-10 3" stroke="#2b2b2b" stroke-width="2.5" stroke-linecap="round"/>',
+    sad:     '<path d="M42 62 q4 -5 9 -1" stroke="#2b2b2b" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M77 62 q4 -5 9 -1" stroke="#2b2b2b" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    hungry:  '<path d="M41 58 l10 6 M51 58 l-10 6" stroke="#2b2b2b" stroke-width="2.6" stroke-linecap="round"/><path d="M77 58 l10 6 M87 58 l-10 6" stroke="#2b2b2b" stroke-width="2.6" stroke-linecap="round"/>'
+  }[tier] || '';
+  const mouth = {
+    happy:   '<path d="M56 74 q8 8 16 0" stroke="#2b2b2b" stroke-width="2.6" fill="none" stroke-linecap="round"/>',
+    content: '<path d="M60 74 q4 3 8 0" stroke="#2b2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+    meh:     '<path d="M58 76 h12" stroke="#2b2b2b" stroke-width="2.4" stroke-linecap="round"/>',
+    sad:     '<path d="M58 78 q6 -5 12 0" stroke="#2b2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+    hungry:  '<path d="M58 78 q6 -6 12 0" stroke="#2b2b2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+  }[tier] || '';
+  return `<svg class="pet-cat" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+    <!-- ears -->
+    <path d="M30 40 L34 10 L58 34 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M98 40 L94 10 L70 34 Z" fill="#8a6a44" stroke="#4A3324" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M37 30 L39 18 L50 30 Z" fill="#C98B7A"/>
+    <path d="M91 30 L89 18 L78 30 Z" fill="#C98B7A"/>
+    <!-- head -->
+    <ellipse cx="64" cy="60" rx="40" ry="37" fill="#9c7a4f" stroke="#4A3324" stroke-width="3.5"/>
+    <!-- tabby stripes -->
+    <path d="M64 24 v14" stroke="#6b4f30" stroke-width="4" stroke-linecap="round"/>
+    <path d="M52 26 l3 12" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M76 26 l-3 12" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M26 52 l14 4" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M24 64 l15 2" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M102 52 l-14 4" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M104 64 l-15 2" stroke="#6b4f30" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- muzzle -->
+    <ellipse cx="64" cy="72" rx="20" ry="15" fill="#e9dcc4"/>
+    ${eyes}
+    <!-- nose -->
+    <path d="M60 68 h8 l-4 5 Z" fill="#C1477A" stroke="#4A3324" stroke-width="1.5" stroke-linejoin="round"/>
+    ${mouth}
+    <!-- whiskers -->
+    <path d="M44 70 l-20 -4 M44 74 l-20 2 M84 70 l20 -4 M84 74 l20 2" stroke="#4A3324" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+  </svg>`;
+}
 function formatLastRotated(iso){
   if(!iso) return 'noch nie weitergegeben';
   const d = new Date(iso);
@@ -2046,6 +2337,13 @@ function viewClean(){
   const streak = state.clean.streak || {count:0, lastDate:null};
   const streakActive = streak.lastDate === isoDate(new Date()) || streak.lastDate === isoDate(addDays(new Date(),-1));
   let html = `<h2 class="section-title">Putzplan</h2>`;
+  const pet = petState();
+  html += `<div class="pet-card ${pet.tier}" id="petCard">
+    ${petScene(pet)}
+    <div class="pet-name">${PET_NAME}</div>
+    <div class="pet-status">${esc(pet.label)} · ${pet.purr}</div>
+    <div class="pet-vitality-track"><div class="pet-vitality-fill" style="width:${pet.vitality}%;background:${moodColor(pet.vitality)}"></div></div>
+  </div>`;
   const season = currentSeason();
   const seasonPoints = Object.values(points).reduce((s,p)=>s+p,0);
   html += `<div class="streak-box" style="background:var(--week-soft)">${season.icon} Saison ${season.label} ${season.year} · ${seasonPoints} Punkte</div>`;
@@ -2518,6 +2816,47 @@ function bindEvents(){
   };
 
   // Cleaning
+  const petCard = document.getElementById('petCard');
+  if(petCard){
+    petCard.onclick = (e)=>{
+      const pet = petState();
+      // floating hearts from tap point
+      const rect = petCard.getBoundingClientRect();
+      for(let i=0;i<3;i++){
+        const h = document.createElement('div');
+        h.className = 'pet-hearts';
+        h.textContent = pet.tier==='hungry'||pet.tier==='sad' ? '💧' : '💛';
+        h.style.left = (e.clientX - rect.left + (Math.random()*40-20)) + 'px';
+        h.style.top = (e.clientY - rect.top - 10) + 'px';
+        h.style.animationDelay = (i*0.12)+'s';
+        petCard.appendChild(h);
+        setTimeout(()=> h.remove(), 1500);
+      }
+      // speech bubble
+      const old = petCard.querySelector('.pet-bubble');
+      if(old) old.remove();
+      const bubble = document.createElement('div');
+      bubble.className = 'pet-bubble';
+      bubble.textContent = petMessage(pet.tier);
+      petCard.appendChild(bubble);
+      setTimeout(()=>{ if(bubble.isConnected) bubble.remove(); }, 5000);
+    };
+    // wander loop: move the cat around when it's awake
+    if(window._petWander) clearInterval(window._petWander);
+    window._petWander = setInterval(()=>{
+      const actor = document.getElementById('petActor');
+      if(!actor || activeTab !== 'clean') return;
+      const pet = petState();
+      const act = petActivity(pet.tier);
+      if(act==='schlafen' || act==='doesen') return; // resting, stay put
+      const target = 12 + Math.floor(Math.random()*68);
+      const current = state._petPos != null ? state._petPos : 40;
+      state._petFlip = target < current; // face the direction of travel
+      state._petPos = target;
+      actor.classList.toggle('flip', state._petFlip);
+      actor.style.left = target + '%';
+    }, 4200);
+  }
   const moodFace = document.getElementById('moodFace');
   if(moodFace) moodFace.onclick = ()=>{
     const m = houseMood();
@@ -2649,6 +2988,7 @@ function bindEvents(){
       }));
 
       await saveKey(KEYS.clean, state.clean); render();
+      petReact();
 
       const queue = [];
       if(questMsg) queue.push(questMsg);
