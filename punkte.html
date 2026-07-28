@@ -228,6 +228,7 @@
   }
   .grip{width:38px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 14px;}
   .sheet h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0 0 14px;}
+  .stepper{font-size:0.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 4px;}
   .results{list-style:none;margin:14px 0 0;padding:0;}
   .grouphead{
     font-family:'Fraunces',serif;font-weight:600;font-size:0.8rem;
@@ -266,6 +267,31 @@
     text-decoration:none;border-bottom:1px solid var(--line);
   }
   @media (prefers-reduced-motion: reduce){ .ring-fg{transition:none;} }
+
+  /* Alternatives Erscheinungsbild für Elena – eigenes Farbschema im vertrauten Yazio-Gefühl:
+     klares Teal statt warmes Fraunces-Design, Systemschrift statt Serife, mehr Weißraum.
+     Bewusst kein Nachbau von Logo oder exakter Markenfarbe. */
+  body.theme-vital{
+    --paper:#F4F7F6; --card:#FFFFFF; --ink:#1B2B29; --ink-soft:#6E7E7B; --line:#E3ECEA;
+    --pk:#00A896; --pk-soft:#DAF3EF;
+    --weight:#00A896; --weight-soft:#DAF3EF;
+    --house:#00A896; --house-soft:#DAF3EF;
+    --sport:#F2A93B; --sport-soft:#FBEBCC;
+  }
+  body.theme-vital, body.theme-vital input, body.theme-vital select, body.theme-vital button{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  body.theme-vital header h1, body.theme-vital .section-title,
+  body.theme-vital .meal-head h3, body.theme-vital .sheet-titel,
+  body.theme-vital .ringnum, body.theme-vital .haus-zahl,
+  body.theme-vital .b-label{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-weight:700; letter-spacing:-0.01em;
+  }
+  body.theme-vital .card{ border-radius:20px; box-shadow:0 8px 24px rgba(0,0,0,.05); }
+  body.theme-vital .tab{ border-radius:14px 14px 0 0; }
+  body.theme-vital .ring-fg{ stroke-linecap:round; }
+  body.theme-vital .badge, body.theme-vital .punkte-badge{ border-radius:10px; }
 </style>
 </head>
 <body>
@@ -278,12 +304,7 @@
 
   <div class="people" id="people"></div>
 
-  <div class="tabs">
-    <button class="tab" data-tab="today">Heute</button>
-    <button class="tab" data-tab="weight">Gewicht</button>
-    <button class="tab" data-tab="house">Haus</button>
-    <button class="tab" data-tab="profile">Profil</button>
-  </div>
+  <div class="tabs" id="tabsBar"></div>
   <div class="card" id="view"><p class="muted">Lädt…</p></div>
 
   <a class="backlink" href="index.html">← Zurück zu Happy Cornelius</a>
@@ -304,9 +325,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 /* defaultPin: SHA-256 von "<id>::<code>". Der Code steht bewusst nicht im Klartext hier,
    weil das Repo öffentlich ist. Wirklich sicher ist das trotzdem nicht – siehe Profil-Tab. */
 const PEOPLE = [
-  {id:'fabian', name:'Fabian',   recipes:true,  defaultPin:'695b37fc7bd3d1ea878f4731388c1a9345e8fc3e2c3507c003037007cd9641ba'},
-  {id:'elena',  name:'Elena',    recipes:true,  defaultPin:'9bfcf1fede74bcdfc551a12d912f7d21e9aad46b293a82fe12946bcad18c0936'},
-  {id:'mama',   name:'Oma Gigi', recipes:false, defaultPin:'a909965db62eebfc1435ef3cba7d3485becac0fd7db5c52fab379af1f1a6cd96'}
+  {id:'fabian', name:'Fabian',   recipes:true,  theme:null,        defaultPin:'695b37fc7bd3d1ea878f4731388c1a9345e8fc3e2c3507c003037007cd9641ba'},
+  {id:'elena',  name:'Elena',    recipes:true,  theme:null,        defaultPin:'9bfcf1fede74bcdfc551a12d912f7d21e9aad46b293a82fe12946bcad18c0936'},
+  {id:'mama',   name:'Oma Gigi', recipes:false, theme:null,        defaultPin:'a909965db62eebfc1435ef3cba7d3485becac0fd7db5c52fab379af1f1a6cd96'}
 ];
 const RECENT_MAX = 20;
 const WEEKDAYS = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -372,7 +393,7 @@ function visibleTemplates(){
   });
 }
 let activeTab = 'today';
-let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[], log:[], house:null, sportBank:{entries:[],redeemed:{}} };
+let state = { day:{entries:[]}, weight:[], profile:{budget:DEFAULT_BUDGET}, recipes:[], templates:[], recent:[], log:[], house:null, sportBank:{entries:[],redeemed:{}}, myRecipeMeal:'lunch' };
 let sheet = null;
 let unlocked = false;   // gilt nur für die laufende Sitzung und nur für die gewählte Person
 
@@ -722,6 +743,44 @@ async function setBudget(v){
 }
 
 /* ---------- Rendering ---------- */
+function applyTheme(){
+  const p = PEOPLE.find(x=> x.id===person);
+  document.body.classList.remove('theme-vital');
+  if(p && p.theme) document.body.classList.add(p.theme);
+}
+
+/* Elena bekommt eine andere Reiter-Struktur (Tagebuch/Auswertung/Rezepte/Profil),
+   angelehnt an Yazios Aufbau. Fabian und Oma Gigi behalten die bisherige Struktur. */
+function personTabs(){
+  if(person==='elena') return [
+    {key:'today',     label:'Tagebuch'},
+    {key:'analysis',  label:'Auswertung'},
+    {key:'myrecipes', label:'Rezepte'},
+    {key:'profile',   label:'Profil'}
+  ];
+  return [
+    {key:'today',   label:'Heute'},
+    {key:'weight',  label:'Gewicht'},
+    {key:'house',   label:'Haus'},
+    {key:'profile', label:'Profil'}
+  ];
+}
+function renderTabs(){
+  const tabs = personTabs();
+  if(!tabs.some(t=> t.key===activeTab)) activeTab = 'today';
+  const bar = document.getElementById('tabsBar');
+  bar.innerHTML = tabs.map(t=>
+    `<button class="tab ${t.key===activeTab?'active':''}" data-tab="${t.key}">${esc(t.label)}</button>`
+  ).join('');
+  bar.querySelectorAll('.tab').forEach(t=>{
+    t.onclick = async ()=>{
+      activeTab = t.dataset.tab;
+      render();
+      if((activeTab==='house' || activeTab==='analysis') && !state.house){ await loadHouse(); render(); }
+    };
+  });
+}
+
 function renderPeople(){
   document.getElementById('people').innerHTML = PEOPLE.map(p=>
     `<button class="person ${p.id===person?'active':''}" data-person="${esc(p.id)}">${esc(p.name)}</button>`
@@ -1021,6 +1080,42 @@ function viewHouse(){
   return html;
 }
 
+/* Auswertung: fasst Haus-Überblick und Gewicht in einer Ansicht zusammen –
+   viewWeight() prüft die Code-Sperre bereits selbst, das übernehmen wir einfach mit. */
+function viewAnalysis(){
+  return viewHouse()
+    + `<div style="height:1px;background:var(--line);margin:26px 0"></div>`
+    + viewWeight();
+}
+
+/* Rezepte-Schnellzugriff: Mahlzeit einmal wählen, danach jedes Rezept mit einem Tap eintragen. */
+function viewMyRecipes(){
+  const meal = state.myRecipeMeal || 'lunch';
+  let html = `<h2 class="section-title">Rezepte</h2>
+    <div class="field">
+      <label>Für welche Mahlzeit?</label>
+      <select id="mrMeal">${MEALS.map(m=> `<option value="${m.key}" ${m.key===meal?'selected':''}>${esc(m.label)}</option>`).join('')}</select>
+    </div>`;
+  const list = state.recipes.filter(r=> r && r.title).slice().sort((a,b)=> String(a.title).localeCompare(String(b.title),'de'));
+  if(!list.length){
+    html += `<p class="muted">Noch keine Rezepte vorhanden.</p>`;
+    return html;
+  }
+  html += `<ul class="items">` + list.map(r=>{
+    const m = [];
+    if(r.calories) m.push(r.calories+' kcal'); if(r.protein) m.push(r.protein+' g P');
+    m.push('pro Portion');
+    return `<li>
+      <div class="it-txt">
+        <span class="it-name">${(!r.calories&&!r.protein)?'⚠️ ':''}${esc(r.title)}</span>
+        <span class="it-meta">${esc(m.join(' · '))}</span>
+      </div>
+      <button class="action pk small" data-quickadd="${esc(r.id)}">+ 1 Portion</button>
+    </li>`;
+  }).join('') + `</ul>`;
+  return html;
+}
+
 function viewProfile(){
   const budget = state.profile.budget || DEFAULT_BUDGET;
   let tpl = `<h3 class="section-title" style="font-size:1rem;margin:22px 0 8px">Gespeicherte Mahlzeiten</h3>`;
@@ -1101,13 +1196,16 @@ function viewProfile(){
 }
 
 function render(){
+  applyTheme();
   renderPeople();
-  document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.dataset.tab===activeTab));
+  renderTabs();
   const view = document.getElementById('view');
-  if(activeTab==='today')       view.innerHTML = viewToday();
-  else if(activeTab==='weight') view.innerHTML = viewWeight();
-  else if(activeTab==='house')  view.innerHTML = viewHouse();
-  else                          view.innerHTML = viewProfile();
+  if(activeTab==='today')          view.innerHTML = viewToday();
+  else if(activeTab==='weight')    view.innerHTML = viewWeight();
+  else if(activeTab==='house')     view.innerHTML = viewHouse();
+  else if(activeTab==='analysis')  view.innerHTML = viewAnalysis();
+  else if(activeTab==='myrecipes') view.innerHTML = viewMyRecipes();
+  else                             view.innerHTML = viewProfile();
   bind();
 }
 
@@ -1163,6 +1261,20 @@ function bind(){
   };
   const bs = document.getElementById('bSave');
   if(bs) bs.onclick = ()=> setBudget(document.getElementById('bInput').value);
+  const mrMeal = document.getElementById('mrMeal');
+  if(mrMeal) mrMeal.onchange = ()=>{ state.myRecipeMeal = mrMeal.value; };
+  document.querySelectorAll('[data-quickadd]').forEach(el=>{
+    el.onclick = async ()=>{
+      const r = state.recipes.find(x=> String(x.id)===el.dataset.quickadd);
+      if(!r) return;
+      await addEntry({
+        meal: state.myRecipeMeal || 'lunch', name:r.title, recipeId:r.id, portions:1,
+        kcal:Number(r.calories)||0, protein:Number(r.protein)||0, fatSat:0, sugar:0, fiber:0, source:'recipe'
+      });
+      showToast('„' + r.title + '" hinzugefügt ✓');
+    };
+  });
+
   const wdSel = document.getElementById('wdSel');
   if(wdSel) wdSel.onchange = ()=> setWeighDay(wdSel.value);
 
@@ -1383,7 +1495,8 @@ function renderSheet(){
 
   if(!sheet.picked){
     const withRecipes = hasRecipes();
-    inner += `<h3>${esc(label)} – was gab es?</h3>
+    inner += `<p class="stepper">Schritt 1 von 2 · Auswahl</p>
+      <h3>${esc(label)} – was gab es?</h3>
       <input id="q" placeholder="${withRecipes?'Rezept oder Lebensmittel suchen':'Lebensmittel suchen'}" value="${esc(sheet.query||'')}" autocomplete="off">
       <div class="row" style="margin-top:10px;flex-wrap:wrap">
         <button class="action pk small" id="offBtn" ${sheet.loading||!(sheet.query||'').trim()?'disabled':''}>
@@ -1479,6 +1592,7 @@ function renderSheet(){
     const unitLabel = kind==='off' ? 'Menge in Gramm' : (kind==='recipe' ? 'Portionen' : 'Anzahl');
     const icon = kind==='recipe' ? '📖 ' : '';
     inner += `<button class="action ghost small" id="backBtn" style="margin-bottom:10px">← Andere Auswahl</button>
+      <p class="stepper">Schritt 2 von 2 · Menge</p>
       <h3>${icon}${esc(name)}</h3>
       <div class="field">
         <label>${unitLabel}</label>
@@ -1747,13 +1861,7 @@ async function searchOFF(){
 }
 
 /* ---------- Start ---------- */
-document.querySelectorAll('.tab').forEach(t=>{
-  t.onclick = async ()=>{
-    activeTab = t.dataset.tab;
-    render();
-    if(activeTab==='house' && !state.house){ await loadHouse(); render(); }
-  };
-});
+/* Tab-Klicks werden jetzt in renderTabs() gebunden, weil die Reiter je nach Person unterschiedlich sind. */
 document.getElementById('people').onclick = async (e)=>{
   const btn = e.target.closest('[data-person]');
   if(!btn) return;
